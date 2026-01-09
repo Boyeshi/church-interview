@@ -1,39 +1,86 @@
 // Admin Dashboard JavaScript
 
-// Check authentication on page load
+// Secure authentication check
 (function() {
+    console.log('=== ADMIN AUTHENTICATION CHECK ===');
+    
     const isLoggedIn = sessionStorage.getItem('adminLoggedIn');
     const loginTime = sessionStorage.getItem('adminLoginTime');
+    const username = sessionStorage.getItem('adminUsername');
+    
+    console.log('Login status:', isLoggedIn);
+    console.log('Login time:', loginTime ? new Date(parseInt(loginTime)).toLocaleString() : 'N/A');
+    console.log('Username:', username);
     
     // Check if logged in and session is still valid (4 hours)
     if (!isLoggedIn || !loginTime || (Date.now() - parseInt(loginTime)) > 14400000) {
+        console.error('❌ Not authenticated or session expired');
+        alert('Session expired or not logged in. Redirecting to login page.');
         window.location.href = 'login.html';
         return;
     }
     
+    console.log('✓ Authentication valid');
+    
     // Set admin name
-    const username = sessionStorage.getItem('adminUsername');
     if (username) {
-        document.getElementById('adminName').textContent = username;
+        const nameElement = document.getElementById('adminName');
+        if (nameElement) {
+            nameElement.textContent = username;
+        }
     }
     
     // Load dashboard data
+    console.log('Loading dashboard...');
     loadDashboard();
+    
+    console.log('=== AUTHENTICATION CHECK COMPLETE ===');
 })();
 
 let allInterviews = [];
 let filteredInterviews = [];
 
 function loadDashboard() {
-    // Load all interviews from localStorage
-    allInterviews = JSON.parse(localStorage.getItem('churchInterviews')) || [];
-    filteredInterviews = [...allInterviews];
+    console.log('=== LOADING ADMIN DASHBOARD ===');
     
-    // Update statistics
-    updateStatistics();
-    
-    // Display interviews
-    displayInterviews();
+    try {
+        // Load all interviews from localStorage
+        const rawData = localStorage.getItem('churchInterviews');
+        console.log('Raw localStorage data:', rawData ? `${rawData.length} characters` : 'NULL');
+        
+        allInterviews = rawData ? JSON.parse(rawData) : [];
+        console.log('Parsed interviews:', allInterviews.length);
+        
+        if (allInterviews.length > 0) {
+            console.log('Sample interview:', allInterviews[0]);
+            allInterviews.forEach((interview, index) => {
+                console.log(`Interview ${index + 1}:`, interview.basicInfo?.fullName || 'Unknown', interview.id);
+            });
+        } else {
+            console.warn('⚠️ NO INTERVIEWS FOUND IN STORAGE');
+            console.log('Checking if localStorage is accessible...');
+            try {
+                localStorage.setItem('test', 'test');
+                localStorage.removeItem('test');
+                console.log('✓ localStorage is accessible');
+            } catch (e) {
+                console.error('✗ localStorage is BLOCKED:', e);
+            }
+        }
+        
+        filteredInterviews = [...allInterviews];
+        
+        // Update statistics
+        updateStatistics();
+        
+        // Display interviews
+        displayInterviews();
+        
+        console.log('=== DASHBOARD LOADED ===');
+    } catch (error) {
+        console.error('ERROR loading dashboard:', error);
+        alert('Error loading interviews. Check browser console for details.');
+    }
 }
 
 function updateStatistics() {
@@ -66,15 +113,60 @@ function updateStatistics() {
 }
 
 function displayInterviews() {
+    console.log('Displaying interviews...');
     const container = document.getElementById('interviewsList');
     const emptyState = document.getElementById('emptyState');
     
     if (filteredInterviews.length === 0) {
+        console.log('No interviews to display');
         container.innerHTML = '';
         emptyState.style.display = 'block';
+        
+        // Update empty state message with helpful info
+        const currentDomain = window.location.hostname;
+        const isLocalhost = currentDomain === 'localhost' || currentDomain === '127.0.0.1';
+        
+        emptyState.innerHTML = `
+            <div style="text-align: center; padding: 60px 20px;">
+                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.5" style="margin-bottom: 20px;">
+                    <path d="M9 11H3v10h6V11z"></path>
+                    <path d="M15 3H9v18h6V3z"></path>
+                    <path d="M21 7h-6v14h6V7z"></path>
+                </svg>
+                <h3 style="color: #666; margin-bottom: 10px;">No Interviews Found</h3>
+                <p style="color: #999; margin-bottom: 20px;">
+                    ${allInterviews.length === 0 ? 
+                        'No interviews have been submitted yet on this domain.' : 
+                        'No interviews match your current filters.'}
+                </p>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; max-width: 500px; margin: 20px auto; text-align: left;">
+                    <p style="color: #666; margin-bottom: 10px;"><strong>Current Domain:</strong> ${currentDomain}</p>
+                    <p style="color: #999; font-size: 14px; margin-bottom: 15px;">
+                        Interviews are stored per domain. Make sure you submitted interviews on this same domain.
+                    </p>
+                    ${isLocalhost ? `
+                        <p style="color: #856404; background: #fff3cd; padding: 10px; border-radius: 4px; font-size: 14px;">
+                            💡 <strong>Tip:</strong> You're on localhost. Submit test interviews at:<br>
+                            <a href="http://localhost:8000/index.html" target="_blank" style="color: #667eea;">http://localhost:8000/index.html</a>
+                        </p>
+                    ` : `
+                        <p style="color: #0c5460; background: #d1ecf1; padding: 10px; border-radius: 4px; font-size: 14px;">
+                            💡 <strong>Tip:</strong> You're on GitHub Pages. Submit interviews at:<br>
+                            <a href="https://boyeshi.github.io/church-interview/" target="_blank" style="color: #667eea;">https://boyeshi.github.io/church-interview/</a>
+                        </p>
+                    `}
+                </div>
+                <div style="margin-top: 20px;">
+                    <a href="domain-checker.html" target="_blank" style="color: #667eea; text-decoration: none; font-weight: 500;">
+                        🔍 Check Data on Both Domains
+                    </a>
+                </div>
+            </div>
+        `;
         return;
     }
     
+    console.log(`Rendering ${filteredInterviews.length} interviews`);
     emptyState.style.display = 'none';
     
     container.innerHTML = filteredInterviews.map(interview => {
@@ -429,6 +521,76 @@ function exportInterview(id) {
     URL.revokeObjectURL(url);
 }
 
+// Data verification function
+function verifyDataAccess() {
+    console.log('=== DATA VERIFICATION ===');
+    
+    const results = [];
+    let hasIssues = false;
+    
+    // Check localStorage availability
+    try {
+        localStorage.setItem('test', 'test');
+        localStorage.removeItem('test');
+        results.push('✓ localStorage is accessible');
+    } catch (e) {
+        results.push('✗ localStorage is BLOCKED: ' + e.message);
+        hasIssues = true;
+    }
+    
+    // Check for data
+    const rawData = localStorage.getItem('churchInterviews');
+    if (!rawData) {
+        results.push('⚠️ NO DATA in localStorage (churchInterviews key is empty)');
+        results.push(`Current domain: ${window.location.hostname}`);
+        results.push('Make sure you submitted interviews on THIS domain.');
+        hasIssues = true;
+    } else {
+        try {
+            const interviews = JSON.parse(rawData);
+            results.push(`✓ Found ${interviews.length} interview(s) in storage`);
+            
+            if (interviews.length > 0) {
+                results.push('\nInterview List:');
+                interviews.forEach((interview, index) => {
+                    const name = interview.basicInfo?.fullName || 'Unknown';
+                    const date = interview.basicInfo?.date || 'N/A';
+                    results.push(`  ${index + 1}. ${name} - ${date} (${interview.id})`);
+                });
+            }
+        } catch (e) {
+            results.push('✗ Data exists but cannot be parsed: ' + e.message);
+            hasIssues = true;
+        }
+    }
+    
+    // Check all localStorage keys
+    results.push(`\nTotal localStorage keys: ${localStorage.length}`);
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        results.push(`  - ${key}`);
+    }
+    
+    // Check session
+    const isLoggedIn = sessionStorage.getItem('adminLoggedIn');
+    const username = sessionStorage.getItem('adminUsername');
+    results.push(`\nSession: ${isLoggedIn ? 'Active' : 'Inactive'}`);
+    results.push(`User: ${username || 'Unknown'}`);
+    
+    // Display results
+    const message = results.join('\n');
+    console.log(message);
+    
+    if (hasIssues) {
+        alert('DATA VERIFICATION RESULTS:\n\n' + message + '\n\nCheck browser console (F12) for more details.');
+    } else {
+        alert('✓ DATA VERIFICATION SUCCESSFUL:\n\n' + message);
+    }
+    
+    // Reload dashboard
+    loadDashboard();
+}
+
 function exportAllData() {
     if (allInterviews.length === 0) {
         alert('No interviews to export');
@@ -469,6 +631,70 @@ function logout() {
         window.location.href = 'login.html';
     }
 }
+
+// Auto-refresh data every 30 seconds to catch new submissions
+let autoRefreshInterval;
+
+function startAutoRefresh() {
+    // Clear any existing interval
+    if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+    }
+    
+    // Refresh every 30 seconds
+    autoRefreshInterval = setInterval(() => {
+        console.log('Auto-refreshing data...');
+        const currentCount = allInterviews.length;
+        loadDashboard();
+        const newCount = allInterviews.length;
+        
+        if (newCount > currentCount) {
+            console.log(`✓ New interview(s) detected! ${currentCount} → ${newCount}`);
+            // Show notification
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 80px;
+                right: 20px;
+                background: #10b981;
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                z-index: 10000;
+                animation: slideIn 0.3s ease;
+            `;
+            notification.textContent = `✓ ${newCount - currentCount} new interview(s) added!`;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+    }, 30000); // 30 seconds
+    
+    console.log('Auto-refresh enabled (every 30 seconds)');
+}
+
+// Start auto-refresh when page loads
+if (sessionStorage.getItem('adminLoggedIn')) {
+    startAutoRefresh();
+}
+
+// Stop auto-refresh when page is hidden (save resources)
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+        console.log('Page hidden, pausing auto-refresh');
+        if (autoRefreshInterval) {
+            clearInterval(autoRefreshInterval);
+        }
+    } else {
+        console.log('Page visible, resuming auto-refresh');
+        startAutoRefresh();
+        loadDashboard(); // Refresh immediately
+    }
+});
 
 // Utility functions
 function formatRecommendation(rec) {

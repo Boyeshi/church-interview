@@ -120,6 +120,10 @@
             </div>
 
             <div class="filter-controls">
+                <button onclick="verifyDataAccess()" style="background: #10b981; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; margin-right: 10px;" title="Check data access and storage">
+                    <span style="margin-right: 5px;">🔍</span> Verify Data
+                </button>
+                
                 <select id="recommendationFilter" onchange="filterInterviews()">
                     <option value="all">All Recommendations</option>
                     <option value="strongly-recommend">Strongly Recommend</option>
