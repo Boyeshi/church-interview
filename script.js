@@ -223,7 +223,9 @@ function gatherFormData() {
     const formData = {
         timestamp: new Date().toISOString(),
         basicInfo: {
-            applicantName: document.getElementById('applicantName').value,
+            firstName: document.getElementById('firstName').value,
+            lastName: document.getElementById('lastName').value,
+            fullName: document.getElementById('firstName').value + ' ' + document.getElementById('lastName').value,
             date: document.getElementById('date').value,
             interviewer: document.getElementById('interviewer').value
         },
@@ -267,7 +269,7 @@ function gatherFormData() {
 
 function validateForm(formData) {
     // Check required fields
-    if (!formData.basicInfo.applicantName || !formData.basicInfo.date || !formData.basicInfo.interviewer) {
+    if (!formData.basicInfo.firstName || !formData.basicInfo.lastName || !formData.basicInfo.date || !formData.basicInfo.interviewer) {
         return false;
     }
 
@@ -297,7 +299,7 @@ function downloadFormData(formData) {
     
     const link = document.createElement('a');
     link.href = url;
-    link.download = `church_assessment_${formData.basicInfo.applicantName.replace(/\s+/g, '_')}_${Date.now()}.json`;
+    link.download = `church_assessment_${formData.basicInfo.lastName}_${formData.basicInfo.firstName}_${Date.now()}.json`;
     
     document.body.appendChild(link);
     link.click();
@@ -345,7 +347,8 @@ function loadSavedData() {
 function restoreFormData(data) {
     // Restore basic info
     if (data.basicInfo) {
-        document.getElementById('applicantName').value = data.basicInfo.applicantName || '';
+        document.getElementById('firstName').value = data.basicInfo.firstName || '';
+        document.getElementById('lastName').value = data.basicInfo.lastName || '';
         document.getElementById('date').value = data.basicInfo.date || '';
         document.getElementById('interviewer').value = data.basicInfo.interviewer || '';
     }

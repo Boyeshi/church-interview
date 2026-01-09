@@ -96,11 +96,17 @@ function displayInterviews() {
         const totalScore = interview.scores?.total || 0;
         const scoreClass = getScoreClass(totalScore);
         
+        // Handle both old and new name formats
+        const fullName = interview.basicInfo?.fullName || 
+                        (interview.basicInfo?.firstName && interview.basicInfo?.lastName 
+                            ? `${interview.basicInfo.firstName} ${interview.basicInfo.lastName}` 
+                            : interview.basicInfo?.applicantName || 'Unknown Applicant');
+        
         return `
             <div class="interview-card" onclick="viewInterview('${interview.id}')">
                 <div class="interview-header">
                     <div class="interview-info">
-                        <h3>${escapeHtml(interview.basicInfo?.applicantName || 'Unknown Applicant')}</h3>
+                        <h3>${escapeHtml(fullName)}</h3>
                         <div class="interview-meta">
                             <span>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -167,6 +173,12 @@ function viewInterview(id) {
         minute: '2-digit'
     });
     
+    // Handle both old and new name formats
+    const firstName = interview.basicInfo?.firstName || '';
+    const lastName = interview.basicInfo?.lastName || '';
+    const fullName = interview.basicInfo?.fullName || 
+                    (firstName && lastName ? `${firstName} ${lastName}` : interview.basicInfo?.applicantName || 'N/A');
+    
     modalBody.innerHTML = `
         <!-- Basic Information -->
         <div class="detail-section">
@@ -177,8 +189,12 @@ function viewInterview(id) {
                     <p>${interview.id}</p>
                 </div>
                 <div class="detail-item">
-                    <label>Applicant Name</label>
-                    <p>${escapeHtml(interview.basicInfo?.applicantName || 'N/A')}</p>
+                    <label>First Name</label>
+                    <p>${escapeHtml(firstName || 'N/A')}</p>
+                </div>
+                <div class="detail-item">
+                    <label>Last Name</label>
+                    <p>${escapeHtml(lastName || 'N/A')}</p>
                 </div>
                 <div class="detail-item">
                     <label>Interview Date</label>
@@ -318,9 +334,12 @@ function filterInterviews() {
     const dateFilter = document.getElementById('dateFilter').value;
     
     filteredInterviews = allInterviews.filter(interview => {
-        // Search by name
-        const nameMatch = !searchTerm || 
-            interview.basicInfo?.applicantName?.toLowerCase().includes(searchTerm);
+        // Search by name (handle both old and new formats)
+        const fullName = interview.basicInfo?.fullName || 
+                        (interview.basicInfo?.firstName && interview.basicInfo?.lastName 
+                            ? `${interview.basicInfo.firstName} ${interview.basicInfo.lastName}` 
+                            : interview.basicInfo?.applicantName || '');
+        const nameMatch = !searchTerm || fullName.toLowerCase().includes(searchTerm);
         
         // Filter by recommendation
         const recMatch = recommendation === 'all' || 
@@ -357,9 +376,25 @@ function sortInterviews() {
             case 'date-asc':
                 return new Date(a.timestamp) - new Date(b.timestamp);
             case 'name-asc':
-                return (a.basicInfo?.applicantName || '').localeCompare(b.basicInfo?.applicantName || '');
+                const nameA = a.basicInfo?.fullName || 
+                            (a.basicInfo?.firstName && a.basicInfo?.lastName 
+                                ? `${a.basicInfo.firstName} ${a.basicInfo.lastName}` 
+                                : a.basicInfo?.applicantName || '');
+                const nameB = b.basicInfo?.fullName || 
+                            (b.basicInfo?.firstName && b.basicInfo?.lastName 
+                                ? `${b.basicInfo.firstName} ${b.basicInfo.lastName}` 
+                                : b.basicInfo?.applicantName || '');
+                return nameA.localeCompare(nameB);
             case 'name-desc':
-                return (b.basicInfo?.applicantName || '').localeCompare(a.basicInfo?.applicantName || '');
+                const nameA2 = a.basicInfo?.fullName || 
+                            (a.basicInfo?.firstName && a.basicInfo?.lastName 
+                                ? `${a.basicInfo.firstName} ${a.basicInfo.lastName}` 
+                                : a.basicInfo?.applicantName || '');
+                const nameB2 = b.basicInfo?.fullName || 
+                            (b.basicInfo?.firstName && b.basicInfo?.lastName 
+                                ? `${b.basicInfo.firstName} ${b.basicInfo.lastName}` 
+                                : b.basicInfo?.applicantName || '');
+                return nameB2.localeCompare(nameA2);
             case 'score-desc':
                 return (b.scores?.total || 0) - (a.scores?.total || 0);
             case 'score-asc':
@@ -380,9 +415,13 @@ function exportInterview(id) {
     const dataBlob = new Blob([dataStr], { type: 'application/json' });
     const url = URL.createObjectURL(dataBlob);
     
+    const lastName = interview.basicInfo?.lastName || 'Unknown';
+    const firstName = interview.basicInfo?.firstName || '';
+    const fileName = firstName ? `${lastName}_${firstName}` : lastName;
+    
     const link = document.createElement('a');
     link.href = url;
-    link.download = `interview_${interview.basicInfo?.applicantName?.replace(/\s+/g, '_')}_${interview.id}.json`;
+    link.download = `interview_${fileName.replace(/\s+/g, '_')}_${interview.id}.json`;
     
     document.body.appendChild(link);
     link.click();
