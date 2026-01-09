@@ -6,7 +6,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     initializeForm();
     setupEventListeners();
-    loadSavedData();
     setCurrentDate();
     initBackToTop();
 });
@@ -33,10 +32,6 @@ function setupEventListeners() {
     ratingInputs.forEach(input => {
         input.addEventListener('change', handleRatingChange);
     });
-
-    // Listen for form changes for auto-save
-    const form = document.getElementById('assessmentForm');
-    form.addEventListener('change', debounce(autoSave, 1000));
 
     // Keyboard shortcuts
     document.addEventListener('keydown', handleKeyboardShortcuts);
@@ -363,27 +358,13 @@ function resetFinancialSection() {
 }
 
 function autoSave() {
-    const formData = gatherFormData();
-    localStorage.setItem('churchAssessmentAutoSave', JSON.stringify(formData));
-    console.log('Auto-saved at', new Date().toLocaleTimeString());
+    // Auto-save disabled per user request
+    // Form will only save on explicit submission
 }
 
 function loadSavedData() {
-    const savedData = localStorage.getItem('churchAssessmentAutoSave');
-    
-    if (savedData) {
-        try {
-            const data = JSON.parse(savedData);
-            
-            // Ask user if they want to restore
-            if (confirm('Found auto-saved data. Would you like to restore it?')) {
-                restoreFormData(data);
-                showNotification('Data restored successfully', 'success');
-            }
-        } catch (error) {
-            console.error('Error loading saved data:', error);
-        }
-    }
+    // Auto-save restore disabled per user request
+    // Users will start with a fresh form each time
 }
 
 function restoreFormData(data) {
