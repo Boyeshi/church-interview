@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 Debug Test - Data Flow Analysis</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        
+        .success { background: #d4edda; color: #155724; border-left: 4px solid #28a745; }
+        .error { background: #f8d7da; color: #721c24; border-left: 4px solid #dc3545; }
+        .warning { background: #fff3cd; color: #856404; border-left: 4px solid #ffc107; }
+        .info { background: #d1ecf1; color: #0c5460; border-left: 4px solid #17a2b8; }
+        
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        
+        pre {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 14px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .stat-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 3em;
+            font-weight: bold;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        
+        #console {
+            background: #000;
+            color: #0f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 500px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        
+        .timestamp {
+            color: #888;
+            font-size: 0.85em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 DEBUG TEST - Data Flow Analysis</h1>
+        
+        <div class="card">
+            <h2>🎯 Quick Status</h2>
+            <div id="quickStatus"></div>
+        </div>
+        
+        <div class="card">
+            <h2>📊 localStorage Statistics</h2>
+            <div class="grid">
+                <div class="stat-box">
+                    <div class="stat-label">Total Keys</div>
+                    <div class="stat-number" id="totalKeys">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Interviews Stored</div>
+                    <div class="stat-number" id="interviewCount">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Storage Size</div>
+                    <div class="stat-number" id="storageSize">0</div>
+                    <div class="stat-label">KB</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>🧪 Test Actions</h2>
+            <button class="btn" onclick="runFullTest()">🔍 Run Full Diagnostic</button>
+            <button class="btn" onclick="testSave()">💾 Test Save Operation</button>
+            <button class="btn" onclick="testLoad()">📂 Test Load Operation</button>
+            <button class="btn" onclick="inspectData()">🔎 Inspect All Data</button>
+            <button class="btn btn-danger" onclick="clearAll()">🗑️ Clear All Data</button>
+        </div>
+        
+        <div class="card">
+            <h2>🖥️ Console Output</h2>
+            <div id="console"></div>
+        </div>
+        
+        <div class="card">
+            <h2>📋 Test Results</h2>
+            <div id="testResults"></div>
+        </div>
+        
+        <div class="card">
+            <h2>💾 Raw Data</h2>
+            <pre id="rawData">No data loaded yet. Click "Inspect All Data" to view.</pre>
+        </div>
+    </div>
+
+    <script>
+        let testsPassed = 0;
+        let testsFailed = 0;
+        
+        function log(message, type = 'info') {
+            const console = document.getElementById('console');
+            const timestamp = new Date().toLocaleTimeString();
+            const colors = {
+                info: '#0f0',
+                error: '#f00',
+                warning: '#ff0',
+                success: '#0ff'
+            };
+            const line = document.createElement('div');
+            line.innerHTML = `<span class="timestamp">[${timestamp}]</span> <span style="color: ${colors[type]}">${message}</span>`;
+            console.appendChild(line);
+            console.scrollTop = console.scrollHeight;
+            
+            // Also log to browser console
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        function addTestResult(name, passed, details) {
+            const results = document.getElementById('testResults');
+            const div = document.createElement('div');
+            div.className = `test-result ${passed ? 'success' : 'error'}`;
+            div.innerHTML = `
+                <strong>${passed ? '✅' : '❌'} ${name}</strong><br>
+                <small>${details}</small>
+            `;
+            results.appendChild(div);
+            
+            if (passed) testsPassed++;
+            else testsFailed++;
+        }
+        
+        function updateStats() {
+            try {
+                // Count total keys
+                const totalKeys = localStorage.length;
+                document.getElementById('totalKeys').textContent = totalKeys;
+                
+                // Count interviews
+                const interviewsData = localStorage.getItem('churchInterviews');
+                const interviews = interviewsData ? JSON.parse(interviewsData) : [];
+                document.getElementById('interviewCount').textContent = interviews.length;
+                
+                // Calculate storage size
+                let totalSize = 0;
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    const value = localStorage.getItem(key);
+                    totalSize += key.length + value.length;
+                }
+                document.getElementById('storageSize').textContent = (totalSize / 1024).toFixed(2);
+                
+                log(`Stats updated: ${totalKeys} keys, ${interviews.length} interviews`, 'success');
+            } catch (error) {
+                log(`Error updating stats: ${error.message}`, 'error');
+            }
+        }
+        
+        function runFullTest() {
+            log('========================================', 'info');
+            log('STARTING FULL DIAGNOSTIC TEST', 'success');
+            log('========================================', 'info');
+            
+            document.getElementById('testResults').innerHTML = '';
+            testsPassed = 0;
+            testsFailed = 0;
+            
+            // Test 1: localStorage availability
+            try {
+                localStorage.setItem('test', 'test');
+                localStorage.removeItem('test');
+                addTestResult('localStorage Available', true, 'Browser supports localStorage and it is working');
+                log('✓ localStorage is available and functional', 'success');
+            } catch (error) {
+                addTestResult('localStorage Available', false, `Error: ${error.message}`);
+                log(`✗ localStorage is NOT available: ${error.message}`, 'error');
+                return;
+            }
+            
+            // Test 2: Check for churchInterviews key
+            const hasKey = localStorage.getItem('churchInterviews') !== null;
+            addTestResult('churchInterviews Key Exists', hasKey, 
+                hasKey ? 'Key found in localStorage' : 'Key NOT found - no data saved yet');
+            log(hasKey ? '✓ churchInterviews key exists' : '⚠ churchInterviews key does NOT exist', 
+                hasKey ? 'success' : 'warning');
+            
+            // Test 3: Parse data
+            try {
+                const data = localStorage.getItem('churchInterviews');
+                if (data) {
+                    const interviews = JSON.parse(data);
+                    addTestResult('Data Parse', true, `Successfully parsed ${interviews.length} interview(s)`);
+                    log(`✓ Data parsed successfully: ${interviews.length} interviews`, 'success');
+                    
+                    // Test 4: Data structure validation
+                    if (interviews.length > 0) {
+                        const firstInterview = interviews[0];
+                        const hasRequiredFields = 
+                            firstInterview.id &&
+                            firstInterview.basicInfo &&
+                            firstInterview.basicInfo.firstName &&
+                            firstInterview.basicInfo.lastName;
+                        
+                        addTestResult('Data Structure', hasRequiredFields, 
+                            hasRequiredFields ? 'Interview data has proper structure' : 'Interview data is malformed');
+                        log(hasRequiredFields ? '✓ Data structure is valid' : '✗ Data structure is INVALID', 
+                            hasRequiredFields ? 'success' : 'error');
+                    }
+                } else {
+                    addTestResult('Data Parse', false, 'No data to parse - churchInterviews is empty');
+                    log('⚠ No data to parse', 'warning');
+                }
+            } catch (error) {
+                addTestResult('Data Parse', false, `Parse error: ${error.message}`);
+                log(`✗ Failed to parse data: ${error.message}`, 'error');
+            }
+            
+            // Test 5: Storage quota
+            try {
+                const estimate = navigator.storage && navigator.storage.estimate ? 
+                    await navigator.storage.estimate() : null;
+                if (estimate) {
+                    const percentUsed = ((estimate.usage / estimate.quota) * 100).toFixed(2);
+                    addTestResult('Storage Quota', true, 
+                        `Using ${(estimate.usage / 1024 / 1024).toFixed(2)}MB of ${(estimate.quota / 1024 / 1024).toFixed(2)}MB (${percentUsed}%)`);
+                    log(`✓ Storage: ${percentUsed}% used`, 'success');
+                } else {
+                    addTestResult('Storage Quota', true, 'Storage API not available (older browser)');
+                }
+            } catch (error) {
+                log(`⚠ Could not check storage quota: ${error.message}`, 'warning');
+            }
+            
+            // Test 6: Check all localStorage keys
+            log('Listing all localStorage keys:', 'info');
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                const value = localStorage.getItem(key);
+                log(`  - ${key}: ${value.length} characters`, 'info');
+            }
+            
+            updateStats();
+            
+            log('========================================', 'info');
+            log(`DIAGNOSTIC COMPLETE: ${testsPassed} passed, ${testsFailed} failed`, 'success');
+            log('========================================', 'info');
+            
+            // Show quick status
+            const statusDiv = document.getElementById('quickStatus');
+            if (testsFailed === 0) {
+                statusDiv.innerHTML = '<div class="status success">✅ All tests passed! System is working correctly.</div>';
+            } else {
+                statusDiv.innerHTML = `<div class="status error">❌ ${testsFailed} test(s) failed. Check console output for details.</div>`;
+            }
+        }
+        
+        function testSave() {
+            log('Testing SAVE operation...', 'info');
+            
+            try {
+                // Get existing interviews
+                let interviews = JSON.parse(localStorage.getItem('churchInterviews')) || [];
+                const beforeCount = interviews.length;
+                log(`Current interviews in storage: ${beforeCount}`, 'info');
+                
+                // Create test interview (mimicking script.js saveToHistory function)
+                const testInterview = {
+                    id: 'INT-' + Date.now(),
+                    savedAt: new Date().toISOString(),
+                    timestamp: new Date().toISOString(),
+                    basicInfo: {
+                        firstName: 'Debug',
+                        lastName: 'Test',
+                        fullName: 'Debug Test',
+                        date: new Date().toISOString().split('T')[0],
+                        interviewer: 'System Tester'
+                    },
+                    spiritualAssessment: {
+                        bornAgain: true,
+                        activeChurch: true,
+                        integrity: true,
+                        obedient: true,
+                        communication: true
+                    },
+                    administrativeSkills: {
+                        skill1: 8, skill2: 7, skill3: 9, skill4: 8, skill5: 7
+                    },
+                    financialSkills: {
+                        skill1: 8, skill2: 9, skill3: 7, skill4: 8, skill5: 9
+                    },
+                    ethicsCheck: 'Debug test ethics response',
+                    finalDecision: {
+                        recommendation: 'recommend',
+                        remarks: 'Debug test remarks',
+                        interviewerSignature: 'Debug Signature',
+                        signatureDate: new Date().toISOString().split('T')[0]
+                    },
+                    scores: {
+                        administrative: 39,
+                        financial: 41,
+                        total: 80
+                    }
+                };
+                
+                log(`Creating test interview with ID: ${testInterview.id}`, 'info');
+                
+                // Add to array
+                interviews.push(testInterview);
+                
+                // Save to localStorage
+                localStorage.setItem('churchInterviews', JSON.stringify(interviews));
+                log('Saved to localStorage', 'success');
+                
+                // Verify it was saved
+                const savedData = localStorage.getItem('churchInterviews');
+                const savedInterviews = JSON.parse(savedData);
+                const afterCount = savedInterviews.length;
+                
+                log(`Before: ${beforeCount} interviews`, 'info');
+                log(`After: ${afterCount} interviews`, 'info');
+                
+                if (afterCount === beforeCount + 1) {
+                    log('✓ SAVE TEST PASSED: Interview successfully saved', 'success');
+                    addTestResult('Save Operation', true, `Successfully saved interview ${testInterview.id}`);
+                } else {
+                    log('✗ SAVE TEST FAILED: Count mismatch', 'error');
+                    addTestResult('Save Operation', false, 'Interview count did not increase');
+                }
+                
+                updateStats();
+                
+            } catch (error) {
+                log(`✗ SAVE TEST FAILED: ${error.message}`, 'error');
+                addTestResult('Save Operation', false, error.message);
+                console.error(error);
+            }
+        }
+        
+        function testLoad() {
+            log('Testing LOAD operation...', 'info');
+            
+            try {
+                // Mimic admin.js loadDashboard function
+                log('Attempting to load churchInterviews...', 'info');
+                
+                const data = localStorage.getItem('churchInterviews');
+                
+                if (!data) {
+                    log('⚠ No data found in localStorage', 'warning');
+                    addTestResult('Load Operation', false, 'churchInterviews key is null or empty');
+                    return;
+                }
+                
+                log(`Raw data length: ${data.length} characters`, 'info');
+                
+                const interviews = JSON.parse(data);
+                log(`Parsed ${interviews.length} interview(s)`, 'success');
+                
+                if (interviews.length === 0) {
+                    log('⚠ Array is empty - no interviews to load', 'warning');
+                    addTestResult('Load Operation', true, 'Data loads but array is empty');
+                } else {
+                    log('✓ LOAD TEST PASSED', 'success');
+                    addTestResult('Load Operation', true, `Successfully loaded ${interviews.length} interview(s)`);
+                    
+                    // Log each interview
+                    interviews.forEach((interview, index) => {
+                        log(`  ${index + 1}. ${interview.basicInfo?.fullName || 'Unknown'} (${interview.id})`, 'info');
+                    });
+                }
+                
+                updateStats();
+                
+            } catch (error) {
+                log(`✗ LOAD TEST FAILED: ${error.message}`, 'error');
+                addTestResult('Load Operation', false, error.message);
+                console.error(error);
+            }
+        }
+        
+        function inspectData() {
+            log('Inspecting all localStorage data...', 'info');
+            
+            try {
+                const data = localStorage.getItem('churchInterviews');
+                
+                if (!data) {
+                    document.getElementById('rawData').textContent = 'No data found - churchInterviews key does not exist';
+                    log('⚠ No data to inspect', 'warning');
+                    return;
+                }
+                
+                const interviews = JSON.parse(data);
+                document.getElementById('rawData').textContent = JSON.stringify(interviews, null, 2);
+                
+                log(`✓ Displaying ${interviews.length} interview(s)`, 'success');
+                updateStats();
+                
+            } catch (error) {
+                document.getElementById('rawData').textContent = `Error: ${error.message}\n\nRaw data:\n${data}`;
+                log(`✗ Error inspecting data: ${error.message}`, 'error');
+            }
+        }
+        
+        function clearAll() {
+            if (confirm('⚠️ WARNING: This will DELETE ALL interview data!\n\nAre you absolutely sure?')) {
+                try {
+                    const count = JSON.parse(localStorage.getItem('churchInterviews') || '[]').length;
+                    localStorage.removeItem('churchInterviews');
+                    log(`✓ Deleted ${count} interview(s)`, 'success');
+                    addTestResult('Clear Data', true, `Cleared ${count} interview(s)`);
+                    updateStats();
+                    document.getElementById('rawData').textContent = 'All data cleared';
+                } catch (error) {
+                    log(`✗ Error clearing data: ${error.message}`, 'error');
+                }
+            }
+        }
+        
+        // Auto-run on load
+        window.addEventListener('DOMContentLoaded', () => {
+            log('Debug Test Tool Initialized', 'success');
+            log('Browser: ' + navigator.userAgent, 'info');
+            log('Domain: ' + window.location.hostname, 'info');
+            log('Protocol: ' + window.location.protocol, 'info');
+            updateStats();
+            
+            // Show initial status
+            const statusDiv = document.getElementById('quickStatus');
+            statusDiv.innerHTML = '<div class="status info">Ready to test. Click "Run Full Diagnostic" to begin.</div>';
+        });
+    </script>
+</body>
+</html>

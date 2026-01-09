@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Domain & Data Checker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            margin: 20px 0;
+        }
+        h1 {
+            color: #667eea;
+            text-align: center;
+        }
+        h2 {
+            color: #333;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: bold;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .warning { background: #fff3cd; color: #856404; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background: #667eea;
+            color: white;
+        }
+        tr:hover {
+            background: #f5f5f5;
+        }
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #5568d3;
+        }
+        pre {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🌐 Domain & Data Checker</h1>
+    
+    <div class="card">
+        <h2>📍 Current Location</h2>
+        <table>
+            <tr>
+                <th>Property</th>
+                <th>Value</th>
+            </tr>
+            <tr>
+                <td>Full URL</td>
+                <td id="fullUrl"></td>
+            </tr>
+            <tr>
+                <td>Protocol</td>
+                <td id="protocol"></td>
+            </tr>
+            <tr>
+                <td>Hostname</td>
+                <td id="hostname"></td>
+            </tr>
+            <tr>
+                <td>Port</td>
+                <td id="port"></td>
+            </tr>
+            <tr>
+                <td>Pathname</td>
+                <td id="pathname"></td>
+            </tr>
+            <tr>
+                <td>Origin</td>
+                <td id="origin"></td>
+            </tr>
+        </table>
+    </div>
+    
+    <div class="card">
+        <h2>⚠️ Domain Warning</h2>
+        <div id="domainWarning"></div>
+    </div>
+    
+    <div class="card">
+        <h2>💾 localStorage Status</h2>
+        <div id="storageStatus"></div>
+        <button class="btn" onclick="checkData()">🔍 Check Data</button>
+        <button class="btn" onclick="location.reload()">🔄 Refresh</button>
+    </div>
+    
+    <div class="card">
+        <h2>📊 Data Summary</h2>
+        <div id="dataSummary"></div>
+    </div>
+    
+    <div class="card">
+        <h2>🔗 Quick Links</h2>
+        <p><strong>If you're on localhost:</strong></p>
+        <ul>
+            <li><a href="http://localhost:8000/index.html" target="_blank">Submit Interview (localhost)</a></li>
+            <li><a href="http://localhost:8000/login.html" target="_blank">Admin Dashboard (localhost)</a></li>
+        </ul>
+        <p><strong>If you're on GitHub Pages:</strong></p>
+        <ul>
+            <li><a href="https://boyeshi.github.io/church-interview/" target="_blank">Submit Interview (GitHub Pages)</a></li>
+            <li><a href="https://boyeshi.github.io/church-interview/login.html" target="_blank">Admin Dashboard (GitHub Pages)</a></li>
+        </ul>
+    </div>
+    
+    <div class="card">
+        <h2>📝 Raw Data</h2>
+        <pre id="rawData">Click "Check Data" to view...</pre>
+    </div>
+
+    <script>
+        function displayLocationInfo() {
+            document.getElementById('fullUrl').textContent = window.location.href;
+            document.getElementById('protocol').textContent = window.location.protocol;
+            document.getElementById('hostname').textContent = window.location.hostname;
+            document.getElementById('port').textContent = window.location.port || '(default)';
+            document.getElementById('pathname').textContent = window.location.pathname;
+            document.getElementById('origin').textContent = window.location.origin;
+            
+            // Check domain and show warning
+            const warningDiv = document.getElementById('domainWarning');
+            const hostname = window.location.hostname;
+            
+            if (hostname === 'localhost' || hostname === '127.0.0.1') {
+                warningDiv.innerHTML = `
+                    <div class="alert warning">
+                        ⚠️ <strong>You are on LOCALHOST</strong><br>
+                        Any interviews you submit here will ONLY be visible when you check the admin on localhost.<br>
+                        They will NOT appear on GitHub Pages.
+                    </div>
+                `;
+            } else if (hostname.includes('github.io')) {
+                warningDiv.innerHTML = `
+                    <div class="alert info">
+                        ℹ️ <strong>You are on GITHUB PAGES</strong><br>
+                        Any interviews you submit here will ONLY be visible when you check the admin on GitHub Pages.<br>
+                        They will NOT appear on localhost.
+                    </div>
+                `;
+            } else {
+                warningDiv.innerHTML = `
+                    <div class="alert warning">
+                        ⚠️ <strong>Unknown domain: ${hostname}</strong><br>
+                        localStorage is domain-specific. Data saved here won't be visible on other domains.
+                    </div>
+                `;
+            }
+        }
+        
+        function checkData() {
+            const statusDiv = document.getElementById('storageStatus');
+            const summaryDiv = document.getElementById('dataSummary');
+            const rawDataDiv = document.getElementById('rawData');
+            
+            try {
+                // Check if localStorage is available
+                localStorage.setItem('test', 'test');
+                localStorage.removeItem('test');
+                
+                // Get churchInterviews data
+                const data = localStorage.getItem('churchInterviews');
+                
+                if (!data || data === 'null') {
+                    statusDiv.innerHTML = '<div class="alert error">❌ <strong>NO DATA FOUND</strong><br>The "churchInterviews" key does not exist or is empty.</div>';
+                    summaryDiv.innerHTML = '<div class="alert info">No interviews have been saved on this domain yet.</div>';
+                    rawDataDiv.textContent = 'No data';
+                    return;
+                }
+                
+                // Parse the data
+                const interviews = JSON.parse(data);
+                
+                statusDiv.innerHTML = `<div class="alert success">✅ <strong>DATA FOUND</strong><br>Found ${interviews.length} interview(s) in localStorage.</div>`;
+                
+                // Create summary
+                let summaryHTML = `<p><strong>Total Interviews:</strong> ${interviews.length}</p>`;
+                summaryHTML += '<table><tr><th>#</th><th>Name</th><th>Date</th><th>ID</th><th>Recommendation</th></tr>';
+                
+                interviews.forEach((interview, index) => {
+                    const name = interview.basicInfo?.fullName || 
+                                interview.basicInfo?.firstName + ' ' + interview.basicInfo?.lastName ||
+                                'Unknown';
+                    const date = interview.basicInfo?.date || 'N/A';
+                    const id = interview.id || 'N/A';
+                    const rec = interview.finalDecision?.recommendation || 'N/A';
+                    
+                    summaryHTML += `<tr>
+                        <td>${index + 1}</td>
+                        <td>${name}</td>
+                        <td>${date}</td>
+                        <td>${id}</td>
+                        <td>${rec}</td>
+                    </tr>`;
+                });
+                
+                summaryHTML += '</table>';
+                summaryDiv.innerHTML = summaryHTML;
+                
+                // Show raw data
+                rawDataDiv.textContent = JSON.stringify(interviews, null, 2);
+                
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="alert error">❌ <strong>ERROR</strong><br>${error.message}</div>`;
+                summaryDiv.innerHTML = '';
+                rawDataDiv.textContent = `Error: ${error.message}`;
+                console.error(error);
+            }
+        }
+        
+        // Run on load
+        window.addEventListener('DOMContentLoaded', () => {
+            displayLocationInfo();
+            checkData();
+        });
+    </script>
+</body>
+</html>
