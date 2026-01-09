@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Test - Submit & Verify</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        
+        .btn-success {
+            background: #28a745;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+        }
+        
+        #log {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        .success { color: #4caf50; }
+        .error { color: #f44336; }
+        .info { color: #2196f3; }
+        .warning { color: #ff9800; }
+        
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 3em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        
+        .interview-list {
+            margin: 20px 0;
+        }
+        
+        .interview-item {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .interview-item strong {
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Church Interview - Quick Test</h1>
+        
+        <div class="card">
+            <h2>📊 Statistics</h2>
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Total Interviews</div>
+                    <div class="stat-number" id="totalCount">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Recommended</div>
+                    <div class="stat-number" id="recommendedCount">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Not Recommended</div>
+                    <div class="stat-number" id="notRecommendedCount">0</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>🧪 Test Actions</h2>
+            <button class="btn btn-success" onclick="createTestInterview()">Create Test Interview</button>
+            <button class="btn" onclick="viewAllInterviews()">View All Interviews</button>
+            <button class="btn" onclick="checkStorage()">Check Storage</button>
+            <button class="btn btn-danger" onclick="clearAll()">Clear All Data</button>
+        </div>
+        
+        <div class="card">
+            <h2>📝 Console Log</h2>
+            <div id="log"></div>
+        </div>
+        
+        <div class="card">
+            <h2>📋 Interview List</h2>
+            <div id="interviewList" class="interview-list"></div>
+        </div>
+    </div>
+
+    <script>
+        let logCount = 0;
+        
+        function log(message, type = 'info') {
+            logCount++;
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const line = document.createElement('div');
+            line.className = type;
+            line.textContent = `[${timestamp}] ${message}`;
+            logDiv.appendChild(line);
+            logDiv.scrollTop = logDiv.scrollHeight;
+            
+            // Also log to console
+            console.log(`[${type.toUpperCase()}]`, message);
+        }
+        
+        function updateStats() {
+            try {
+                const interviews = JSON.parse(localStorage.getItem('churchInterviews')) || [];
+                document.getElementById('totalCount').textContent = interviews.length;
+                
+                const recommended = interviews.filter(i => 
+                    i.finalDecision?.recommendation === 'strongly-recommend' || 
+                    i.finalDecision?.recommendation === 'recommend'
+                ).length;
+                
+                const notRecommended = interviews.filter(i => 
+                    i.finalDecision?.recommendation === 'not-recommend'
+                ).length;
+                
+                document.getElementById('recommendedCount').textContent = recommended;
+                document.getElementById('notRecommendedCount').textContent = notRecommended;
+                
+                log(`Stats updated: ${interviews.length} total, ${recommended} recommended`, 'success');
+            } catch (error) {
+                log(`Error updating stats: ${error.message}`, 'error');
+            }
+        }
+        
+        function createTestInterview() {
+            log('Creating test interview...', 'info');
+            
+            try {
+                const interviews = JSON.parse(localStorage.getItem('churchInterviews')) || [];
+                
+                const names = [
+                    ['John', 'Doe'], ['Jane', 'Smith'], ['Michael', 'Johnson'],
+                    ['Sarah', 'Williams'], ['David', 'Brown'], ['Emily', 'Jones']
+                ];
+                
+                const randomName = names[Math.floor(Math.random() * names.length)];
+                const recommendations = ['strongly-recommend', 'recommend', 'not-recommend'];
+                const randomRec = recommendations[Math.floor(Math.random() * recommendations.length)];
+                
+                const testInterview = {
+                    id: 'INT-' + Date.now(),
+                    savedAt: new Date().toISOString(),
+                    timestamp: new Date().toISOString(),
+                    basicInfo: {
+                        firstName: randomName[0],
+                        lastName: randomName[1],
+                        fullName: `${randomName[0]} ${randomName[1]}`,
+                        date: new Date().toISOString().split('T')[0],
+                        interviewer: 'Test Admin'
+                    },
+                    spiritualAssessment: {
+                        bornAgain: Math.random() > 0.3,
+                        activeChurch: Math.random() > 0.3,
+                        integrity: Math.random() > 0.2,
+                        obedient: Math.random() > 0.2,
+                        communication: Math.random() > 0.2
+                    },
+                    administrativeSkills: {
+                        skill1: Math.floor(Math.random() * 9) + 2,
+                        skill2: Math.floor(Math.random() * 9) + 2,
+                        skill3: Math.floor(Math.random() * 9) + 2,
+                        skill4: Math.floor(Math.random() * 9) + 2,
+                        skill5: Math.floor(Math.random() * 9) + 2
+                    },
+                    financialSkills: {
+                        skill1: Math.floor(Math.random() * 9) + 2,
+                        skill2: Math.floor(Math.random() * 9) + 2,
+                        skill3: Math.floor(Math.random() * 9) + 2,
+                        skill4: Math.floor(Math.random() * 9) + 2,
+                        skill5: Math.floor(Math.random() * 9) + 2
+                    },
+                    ethicsCheck: 'Test ethics response - I understand and agree to the terms',
+                    finalDecision: {
+                        recommendation: randomRec,
+                        remarks: 'Test remarks for evaluation',
+                        interviewerSignature: 'Test Signature',
+                        signatureDate: new Date().toISOString().split('T')[0]
+                    },
+                    scores: {
+                        administrative: Math.floor(Math.random() * 40) + 10,
+                        financial: Math.floor(Math.random() * 40) + 10,
+                        total: Math.floor(Math.random() * 80) + 20
+                    }
+                };
+                
+                interviews.push(testInterview);
+                localStorage.setItem('churchInterviews', JSON.stringify(interviews));
+                
+                log(`✓ Test interview created: ${testInterview.basicInfo.fullName} (${testInterview.id})`, 'success');
+                log(`  Recommendation: ${randomRec}`, 'info');
+                log(`  Total interviews: ${interviews.length}`, 'info');
+                
+                updateStats();
+                viewAllInterviews();
+                
+            } catch (error) {
+                log(`✗ Error creating test interview: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+        
+        function viewAllInterviews() {
+            log('Loading all interviews...', 'info');
+            
+            try {
+                const interviews = JSON.parse(localStorage.getItem('churchInterviews')) || [];
+                
+                if (interviews.length === 0) {
+                    document.getElementById('interviewList').innerHTML = 
+                        '<p style="color: #999; text-align: center; padding: 40px;">No interviews found. Create a test interview to get started.</p>';
+                    log('No interviews found in storage', 'warning');
+                    return;
+                }
+                
+                log(`Found ${interviews.length} interview(s)`, 'success');
+                
+                const listDiv = document.getElementById('interviewList');
+                listDiv.innerHTML = '';
+                
+                interviews.forEach((interview, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'interview-item';
+                    item.innerHTML = `
+                        <strong>#${index + 1}</strong> - ${interview.basicInfo?.fullName || 'Unknown'}<br>
+                        <small>
+                            ID: ${interview.id}<br>
+                            Date: ${interview.basicInfo?.date || 'N/A'}<br>
+                            Interviewer: ${interview.basicInfo?.interviewer || 'N/A'}<br>
+                            Recommendation: ${interview.finalDecision?.recommendation || 'N/A'}<br>
+                            Score: ${interview.scores?.total || 0}/100
+                        </small>
+                    `;
+                    listDiv.appendChild(item);
+                    
+                    log(`  ${index + 1}. ${interview.basicInfo?.fullName} - ${interview.finalDecision?.recommendation}`, 'info');
+                });
+                
+            } catch (error) {
+                log(`✗ Error loading interviews: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+        
+        function checkStorage() {
+            log('Checking localStorage...', 'info');
+            
+            try {
+                log(`Total localStorage keys: ${localStorage.length}`, 'info');
+                
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    const value = localStorage.getItem(key);
+                    log(`  ${key}: ${value.length} characters`, 'info');
+                }
+                
+                const data = localStorage.getItem('churchInterviews');
+                if (data) {
+                    const interviews = JSON.parse(data);
+                    log(`churchInterviews contains ${interviews.length} interview(s)`, 'success');
+                } else {
+                    log('churchInterviews key not found', 'warning');
+                }
+                
+            } catch (error) {
+                log(`✗ Error checking storage: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+        
+        function clearAll() {
+            if (confirm('⚠️ Are you sure you want to delete ALL interview data? This cannot be undone!')) {
+                try {
+                    const count = JSON.parse(localStorage.getItem('churchInterviews') || '[]').length;
+                    localStorage.removeItem('churchInterviews');
+                    log(`✓ Deleted ${count} interview(s)`, 'success');
+                    updateStats();
+                    document.getElementById('interviewList').innerHTML = '';
+                } catch (error) {
+                    log(`✗ Error clearing data: ${error.message}`, 'error');
+                }
+            }
+        }
+        
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', () => {
+            log('=== Church Interview Test Tool Loaded ===', 'success');
+            log('Ready to test!', 'info');
+            updateStats();
+            checkStorage();
+            viewAllInterviews();
+        });
+    </script>
+</body>
+</html>
