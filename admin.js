@@ -763,18 +763,6 @@ function verifyDataAccess() {
     let hasIssues = false;
     
     // Check localStorage availability
-    try{
-        localStorage.setItem('test', 'test');
-        localStorage.removeItem('test');
-        results.push('✓ localStorage is accessible');
-    } catch (e) {
-function verifyDataAccess() {
-    console.log('=== DATA VERIFICATION ===');
-    
-    const results = [];
-    let hasIssues = false;
-    
-    // Check localStorage availability
     try {
         localStorage.setItem('test', 'test');
         localStorage.removeItem('test');
@@ -1250,7 +1238,7 @@ function startAutoRefresh() {
         const newCount = allInterviews.length;
         
         if (newCount > currentCount) {
-            console.log(`✓ New interview(s) detected! ${currentCount} → ${newCount}`);
+            console.log('New interview(s) detected! ' + currentCount + ' -> ' + newCount);
             // Show notification
             const notification = document.createElement('div');
             notification.style.cssText = `
@@ -1265,7 +1253,7 @@ function startAutoRefresh() {
                 z-index: 10000;
                 animation: slideIn 0.3s ease;
             `;
-            notification.textContent = `✓ ${newCount - currentCount} new interview(s) added!`;
+            notification.textContent = (newCount - currentCount) + ' new interview(s) added!';
             document.body.appendChild(notification);
             
             setTimeout(() => {
