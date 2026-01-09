@@ -13,6 +13,11 @@ document.addEventListener('DOMContentLoaded', function() {
 // -------------------- Initialization --------------------
 function initializeForm() {
     console.log('Church Interview Assessment Sheet initialized');
+    
+    // Clean up any old auto-save data
+    localStorage.removeItem('churchAssessmentAutoSave');
+    localStorage.removeItem('churchAssessment');
+    
     updateAllScores();
 }
 
