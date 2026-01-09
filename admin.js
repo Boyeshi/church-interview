@@ -1,5 +1,9 @@
 // Admin Dashboard JavaScript
 
+// Global variables - must be declared before any code that uses them
+let allInterviews = [];
+let filteredInterviews = [];
+
 // Secure authentication check
 (function() {
     console.log('=== ADMIN AUTHENTICATION CHECK ===');
@@ -36,9 +40,6 @@
     
     console.log('=== AUTHENTICATION CHECK COMPLETE ===');
 })();
-
-let allInterviews = [];
-let filteredInterviews = [];
 
 function loadDashboard() {
     console.log('=== LOADING ADMIN DASHBOARD ===');
