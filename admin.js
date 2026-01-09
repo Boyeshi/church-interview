@@ -17,14 +17,14 @@ let filteredInterviews = [];
     console.log('Username:', username);
     
     // Check if logged in and session is still valid (4 hours)
-    if (!isLoggedIn || !loginTime || (Date.now() - parseInt(loginTime)) > 14400000) {
-        console.error('❌ Not authenticated or session expired');
+    if (isLoggedIn !== 'true' || !loginTime || (Date.now() - parseInt(loginTime)) > 14400000) {
+        console.error('Not authenticated or session expired');
         alert('Session expired or not logged in. Redirecting to login page.');
         window.location.href = 'login.html';
         return;
     }
     
-    console.log('✓ Authentication valid');
+    console.log('Authentication valid');
     
     // Set admin name
     if (username) {
@@ -58,14 +58,14 @@ function loadDashboard() {
                 console.log(`Interview ${index + 1}:`, interview.basicInfo?.fullName || 'Unknown', interview.id);
             });
         } else {
-            console.warn('⚠️ NO INTERVIEWS FOUND IN STORAGE');
+            console.warn('NO INTERVIEWS FOUND IN STORAGE');
             console.log('Checking if localStorage is accessible...');
             try {
                 localStorage.setItem('test', 'test');
                 localStorage.removeItem('test');
-                console.log('✓ localStorage is accessible');
+                console.log('localStorage is accessible');
             } catch (e) {
-                console.error('✗ localStorage is BLOCKED:', e);
+                console.error('localStorage is BLOCKED:', e);
             }
         }
         
@@ -808,7 +808,7 @@ function verifyDataAccess() {
     // Check session
     const isLoggedIn = sessionStorage.getItem('adminLoggedIn');
     const username = sessionStorage.getItem('adminUsername');
-    results.push(`\nSession: ${isLoggedIn ? 'Active' : 'Inactive'}`);
+    results.push(`\nSession: ${isLoggedIn === 'true' ? 'Active' : 'Inactive'}`);
     results.push(`User: ${username || 'Unknown'}`);
     
     // Display results
@@ -1267,7 +1267,7 @@ function startAutoRefresh() {
 }
 
 // Start auto-refresh when page loads
-if (sessionStorage.getItem('adminLoggedIn')) {
+if (sessionStorage.getItem('adminLoggedIn') === 'true') {
     startAutoRefresh();
 }
 
