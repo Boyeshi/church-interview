@@ -4,7 +4,7 @@
 let allInterviews = [];
 let filteredInterviews = [];
 
-// Secure authentication check
+// Secure authentication check - runs before DOM is ready
 (function() {
     console.log('=== ADMIN AUTHENTICATION CHECK ===');
     
@@ -25,29 +25,47 @@ let filteredInterviews = [];
     }
     
     console.log('Authentication valid');
+    console.log('=== AUTHENTICATION CHECK COMPLETE ===');
+})();
+
+// Initialize dashboard when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('=== DOM READY - INITIALIZING DASHBOARD ===');
     
-    // Set admin name
+    // Set admin name in UI
+    const username = sessionStorage.getItem('adminUsername');
     if (username) {
         const nameElement = document.getElementById('adminName');
         if (nameElement) {
             nameElement.textContent = username;
+            console.log('Admin name set to:', username);
+        } else {
+            console.error('adminName element not found!');
         }
     }
     
     // Load dashboard data
     console.log('Loading dashboard...');
     loadDashboard();
-    
-    console.log('=== AUTHENTICATION CHECK COMPLETE ===');
-})();
+});
 
 function loadDashboard() {
     console.log('=== LOADING ADMIN DASHBOARD ===');
+    console.log('Current domain:', window.location.hostname);
+    console.log('Current protocol:', window.location.protocol);
+    console.log('Full URL:', window.location.href);
     
     try {
         // Load all interviews from localStorage
         const rawData = localStorage.getItem('churchInterviews');
         console.log('Raw localStorage data:', rawData ? `${rawData.length} characters` : 'NULL');
+        
+        // Check all localStorage keys
+        console.log('All localStorage keys:', localStorage.length);
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            console.log(`  Key ${i}: ${key}`);
+        }
         
         allInterviews = rawData ? JSON.parse(rawData) : [];
         console.log('Parsed interviews:', allInterviews.length);
