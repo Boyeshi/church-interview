@@ -181,13 +181,41 @@ function saveForm() {
         return;
     }
 
-    // Save to localStorage
-    localStorage.setItem('churchAssessment', JSON.stringify(formData));
+    // Save to interview history
+    saveToHistory(formData);
     
     // Also create downloadable JSON
     downloadFormData(formData);
     
-    showNotification('Assessment saved successfully!', 'success');
+    // Clear auto-save after successful save
+    localStorage.removeItem('churchAssessmentAutoSave');
+    
+    showNotification('Assessment saved successfully! Interview recorded in system.', 'success');
+    
+    // Optional: Reset form after save
+    setTimeout(() => {
+        if (confirm('Interview saved! Would you like to reset the form for a new interview?')) {
+            document.getElementById('assessmentForm').reset();
+            updateAllScores();
+        }
+    }, 1000);
+}
+
+function saveToHistory(formData) {
+    // Get existing interviews from localStorage
+    let interviews = JSON.parse(localStorage.getItem('churchInterviews')) || [];
+    
+    // Add unique ID to the interview
+    formData.id = 'INT-' + Date.now();
+    formData.savedAt = new Date().toISOString();
+    
+    // Add to history
+    interviews.push(formData);
+    
+    // Save back to localStorage
+    localStorage.setItem('churchInterviews', JSON.stringify(interviews));
+    
+    console.log('Interview saved to history:', formData.id);
 }
 
 function gatherFormData() {
