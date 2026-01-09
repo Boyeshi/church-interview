@@ -41,6 +41,10 @@
     box-sizing: border-box;
 }
 
+html {
+    scroll-behavior: smooth;
+}
+
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
     font-size: 16px;
@@ -744,4 +748,180 @@ body {
 .radio-item:focus-within {
     border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+/* --------------------- Back to Top Button --------------------- */
+.back-to-top {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 3.5rem;
+    height: 3.5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px) scale(0.8);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1000;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.back-to-top:hover {
+    transform: translateY(-4px) scale(1.05);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+}
+
+.back-to-top:active {
+    transform: translateY(-2px) scale(1);
+}
+
+.back-to-top.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+}
+
+.back-to-top svg {
+    width: 24px;
+    height: 24px;
+    stroke-width: 2.5;
+}
+
+/* --------------------- Enhanced Browser Compatibility --------------------- */
+/* Flexbox fallbacks */
+.header,
+.section-header,
+.form-actions,
+.score-display {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+}
+
+/* Grid fallbacks */
+.form-grid,
+.rating-table {
+    display: -ms-grid;
+    display: grid;
+}
+
+/* Transform fallbacks */
+.back-to-top,
+.btn,
+.admin-link,
+.checkbox-item {
+    -webkit-transform: translateZ(0);
+    -moz-transform: translateZ(0);
+    -ms-transform: translateZ(0);
+    transform: translateZ(0);
+}
+
+/* Gradient fallbacks */
+.header {
+    background: #667eea; /* Fallback */
+    background: -webkit-linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: -moz-linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: -o-linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+body {
+    background: #667eea; /* Fallback */
+    background: -webkit-linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: -moz-linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: -o-linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* User select for better mobile experience */
+.rating-scores label,
+.checkbox-item,
+.radio-item,
+.btn {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/* Touch action for better mobile scrolling */
+body,
+.container {
+    -ms-touch-action: pan-y;
+    touch-action: pan-y;
+}
+
+/* Appearance reset for consistent cross-browser styling */
+input[type="text"],
+input[type="email"],
+input[type="date"],
+textarea,
+select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+/* Hide spinners on number inputs */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+/* Enhanced mobile responsive adjustments */
+@media (max-width: 640px) {
+    body {
+        padding: 1rem 0.5rem;
+    }
+    
+    .back-to-top {
+        bottom: 1rem;
+        right: 1rem;
+        width: 3rem;
+        height: 3rem;
+    }
+    
+    .back-to-top svg {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .container {
+        border-radius: 1rem;
+    }
+}
+
+/* Print styles for better document output */
+@media print {
+    .back-to-top,
+    .admin-link,
+    .btn-reset-section,
+    .form-actions {
+        display: none !important;
+    }
+    
+    .container {
+        box-shadow: none;
+        max-width: 100%;
+    }
+    
+    body {
+        background: white;
+        padding: 0;
+    }
+    
+    .form-section {
+        page-break-inside: avoid;
+    }
 }
