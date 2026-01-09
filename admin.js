@@ -504,409 +504,270 @@ function exportInterview(id) {
     const interview = allInterviews.find(i => i.id === id);
     if (!interview) return;
     
-    // Generate PDF-ready HTML document
-    const pdfWindow = window.open('', '_blank');
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
     
-    const lastName = interview.basicInfo?.lastName || 'Unknown';
-    const firstName = interview.basicInfo?.firstName || '';
-    const fullName = `${firstName} ${lastName}`.trim();
+    const fullName = `${interview.basicInfo?.firstName || ''} ${interview.basicInfo?.lastName || ''}`.trim();
     const date = new Date(interview.timestamp).toLocaleDateString();
     
-    // Calculate recommendation badge style
-    let recBadgeClass = '';
+    // Colors
+    const primaryColor = [102, 126, 234];
+    const darkGray = [55, 65, 81];
+    const lightGray = [156, 163, 175];
+    
+    let yPos = 20;
+    
+    // Header with gradient effect
+    doc.setFillColor(...primaryColor);
+    doc.rect(0, 0, 210, 35, 'F');
+    
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(22);
+    doc.setFont(undefined, 'bold');
+    doc.text('Church Interview Assessment', 105, 15, { align: 'center' });
+    
+    doc.setFontSize(11);
+    doc.setFont(undefined, 'normal');
+    doc.text('Position: Church Administrative & Financial Analyst', 105, 23, { align: 'center' });
+    doc.text(`Interview ID: ${interview.id}`, 105, 29, { align: 'center' });
+    
+    yPos = 45;
+    
+    // Applicant Information
+    doc.setTextColor(...darkGray);
+    doc.setFontSize(14);
+    doc.setFont(undefined, 'bold');
+    doc.text('Applicant Information', 15, yPos);
+    
+    yPos += 8;
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'normal');
+    doc.setTextColor(...lightGray);
+    doc.text('Name:', 15, yPos);
+    doc.setTextColor(...darkGray);
+    doc.setFont(undefined, 'bold');
+    doc.text(fullName, 35, yPos);
+    
+    doc.setFont(undefined, 'normal');
+    doc.setTextColor(...lightGray);
+    doc.text('Date:', 120, yPos);
+    doc.setTextColor(...darkGray);
+    doc.setFont(undefined, 'bold');
+    doc.text(date, 135, yPos);
+    
+    yPos += 12;
+    
+    // Spiritual Assessment
+    doc.setFontSize(14);
+    doc.setFont(undefined, 'bold');
+    doc.setTextColor(...darkGray);
+    doc.text('Spiritual & Character Assessment', 15, yPos);
+    
+    yPos += 7;
+    const spiritualItems = [
+        { label: 'Born again with sound Christian values', value: interview.spiritualAssessment?.bornAgain },
+        { label: 'Active church involvement', value: interview.spiritualAssessment?.activeChurch },
+        { label: 'Integrity and fear of God', value: interview.spiritualAssessment?.integrity },
+        { label: 'Obedient, teachable, respects authority', value: interview.spiritualAssessment?.obedient },
+        { label: 'Good communication and attitude', value: interview.spiritualAssessment?.communication }
+    ];
+    
+    doc.setFontSize(9);
+    doc.setFont(undefined, 'normal');
+    spiritualItems.forEach(item => {
+        doc.setTextColor(...(item.value ? [16, 185, 129] : [239, 68, 68]));
+        doc.text(item.value ? '✓' : '✗', 17, yPos);
+        doc.setTextColor(...darkGray);
+        doc.text(item.label, 23, yPos);
+        yPos += 5;
+    });
+    
+    yPos += 5;
+    
+    // Administrative Skills Table
+    doc.setFontSize(14);
+    doc.setFont(undefined, 'bold');
+    doc.text('Administrative Skills', 15, yPos);
+    yPos += 2;
+    
+    doc.autoTable({
+        startY: yPos,
+        head: [['Area', 'Score']],
+        body: [
+            ['Record keeping & documentation', `${interview.administrativeSkills?.skill1 || 0}/10`],
+            ['Office organization & time management', `${interview.administrativeSkills?.skill2 || 0}/10`],
+            ['Confidentiality & discretion', `${interview.administrativeSkills?.skill3 || 0}/10`],
+            ['Computer skills (Word/Excel/Email)', `${interview.administrativeSkills?.skill4 || 0}/10`],
+            ['Attention to details & accuracy', `${interview.administrativeSkills?.skill5 || 0}/10`],
+            ['TOTAL', `${interview.scores?.administrative || 0}/50`]
+        ],
+        theme: 'grid',
+        headStyles: { fillColor: primaryColor, fontSize: 10, fontStyle: 'bold' },
+        styles: { fontSize: 9, cellPadding: 3 },
+        columnStyles: {
+            0: { cellWidth: 140 },
+            1: { cellWidth: 35, halign: 'center', fontStyle: 'bold' }
+        },
+        margin: { left: 15, right: 15 }
+    });
+    
+    yPos = doc.lastAutoTable.finalY + 10;
+    
+    // Financial Skills Table
+    doc.setFontSize(14);
+    doc.setFont(undefined, 'bold');
+    doc.text('Financial & Analytical Skills', 15, yPos);
+    yPos += 2;
+    
+    doc.autoTable({
+        startY: yPos,
+        head: [['Area', 'Score']],
+        body: [
+            ['Understanding of accounting principles', `${interview.financialSkills?.skill1 || 0}/10`],
+            ['Budgeting & financial planning', `${interview.financialSkills?.skill2 || 0}/10`],
+            ['Financial reporting & analysis', `${interview.financialSkills?.skill3 || 0}/10`],
+            ['Spreadsheet proficiency & data analysis', `${interview.financialSkills?.skill4 || 0}/10`],
+            ['Attention to financial details & accuracy', `${interview.financialSkills?.skill5 || 0}/10`],
+            ['TOTAL', `${interview.scores?.financial || 0}/50`]
+        ],
+        theme: 'grid',
+        headStyles: { fillColor: primaryColor, fontSize: 10, fontStyle: 'bold' },
+        styles: { fontSize: 9, cellPadding: 3 },
+        columnStyles: {
+            0: { cellWidth: 140 },
+            1: { cellWidth: 35, halign: 'center', fontStyle: 'bold' }
+        },
+        margin: { left: 15, right: 15 }
+    });
+    
+    yPos = doc.lastAutoTable.finalY + 10;
+    
+    // Check if we need a new page
+    if (yPos > 240) {
+        doc.addPage();
+        yPos = 20;
+    }
+    
+    // Ethics Response
+    doc.setFontSize(14);
+    doc.setFont(undefined, 'bold');
+    doc.text('Ethics & Compliance Check', 15, yPos);
+    yPos += 6;
+    
+    doc.setFontSize(9);
+    doc.setFont(undefined, 'normal');
+    const ethicsText = interview.ethicsCheck || 'No response provided';
+    const splitEthics = doc.splitTextToSize(ethicsText, 180);
+    doc.text(splitEthics, 15, yPos);
+    yPos += splitEthics.length * 5 + 8;
+    
+    // Check if we need a new page
+    if (yPos > 240) {
+        doc.addPage();
+        yPos = 20;
+    }
+    
+    // Final Assessment
+    doc.setFillColor(248, 250, 252);
+    doc.rect(10, yPos - 5, 190, 35, 'F');
+    
+    doc.setFontSize(14);
+    doc.setFont(undefined, 'bold');
+    doc.setTextColor(...darkGray);
+    doc.text('Final Assessment', 15, yPos);
+    
+    yPos += 8;
+    
+    // Total Score
+    doc.setFontSize(11);
+    doc.setFont(undefined, 'normal');
+    doc.setTextColor(...lightGray);
+    doc.text('Total Score:', 15, yPos);
+    
+    doc.setFontSize(16);
+    doc.setFont(undefined, 'bold');
+    doc.setTextColor(...primaryColor);
+    doc.text(`${interview.scores?.total || 0}/100 (${interview.scores?.total || 0}%)`, 50, yPos);
+    
+    // Recommendation
+    doc.setFontSize(11);
+    doc.setFont(undefined, 'normal');
+    doc.setTextColor(...lightGray);
+    doc.text('Recommendation:', 120, yPos);
+    
     let recText = '';
+    let recColor = [107, 114, 128];
     switch(interview.finalDecision?.recommendation) {
         case 'strongly-recommend':
-            recBadgeClass = 'background: #10b981; color: white;';
             recText = 'Strongly Recommend';
+            recColor = [16, 185, 129];
             break;
         case 'recommend':
-            recBadgeClass = 'background: #3b82f6; color: white;';
             recText = 'Recommend';
+            recColor = [59, 130, 246];
             break;
         case 'consider':
-            recBadgeClass = 'background: #f59e0b; color: white;';
             recText = 'Consider';
+            recColor = [245, 158, 11];
             break;
         case 'not-recommend':
-            recBadgeClass = 'background: #ef4444; color: white;';
             recText = 'Not Recommend';
+            recColor = [239, 68, 68];
             break;
         default:
-            recBadgeClass = 'background: #6b7280; color: white;';
             recText = 'Not Specified';
     }
     
-    const htmlContent = `
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Interview Assessment - ${fullName}</title>
-    <style>
-        @media print {
-            @page { margin: 1.5cm; }
-            body { margin: 0; }
-            .no-print { display: none; }
-        }
-        
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: #1f2937;
-            padding: 20px;
-            max-width: 900px;
-            margin: 0 auto;
-        }
-        
-        .header {
-            text-align: center;
-            padding: 30px 0;
-            border-bottom: 3px solid #667eea;
-            margin-bottom: 30px;
-        }
-        
-        .header h1 {
-            color: #667eea;
-            font-size: 28px;
-            margin-bottom: 10px;
-        }
-        
-        .header p {
-            color: #6b7280;
-            font-size: 14px;
-        }
-        
-        .section {
-            margin: 25px 0;
-            padding: 20px;
-            background: #f9fafb;
-            border-radius: 8px;
-            border-left: 4px solid #667eea;
-        }
-        
-        .section h2 {
-            color: #374151;
-            font-size: 20px;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin: 15px 0;
-        }
-        
-        .info-item {
-            padding: 10px;
-            background: white;
-            border-radius: 6px;
-        }
-        
-        .info-label {
-            font-weight: 600;
-            color: #6b7280;
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .info-value {
-            color: #1f2937;
-            font-size: 16px;
-            margin-top: 5px;
-        }
-        
-        .score-box {
-            display: inline-block;
-            padding: 8px 16px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 6px;
-            font-weight: 700;
-            font-size: 18px;
-        }
-        
-        .badge {
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-weight: 600;
-            font-size: 14px;
-        }
-        
-        .checkbox-list {
-            list-style: none;
-            padding: 10px 0;
-        }
-        
-        .checkbox-list li {
-            padding: 8px 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .checkbox-list li:before {
-            content: '✓';
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            background: #10b981;
-            color: white;
-            border-radius: 4px;
-            text-align: center;
-            line-height: 20px;
-            font-weight: bold;
-        }
-        
-        .checkbox-list li.unchecked:before {
-            content: '✗';
-            background: #ef4444;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 15px 0;
-            background: white;
-        }
-        
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #e5e7eb;
-        }
-        
-        th {
-            background: #f3f4f6;
-            font-weight: 600;
-            color: #374151;
-        }
-        
-        .score-cell {
-            font-weight: 700;
-            color: #667eea;
-        }
-        
-        .remarks-box {
-            padding: 15px;
-            background: white;
-            border-radius: 6px;
-            border: 1px solid #e5e7eb;
-            margin: 10px 0;
-            white-space: pre-wrap;
-        }
-        
-        .print-btn {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 12px 24px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        
-        .print-btn:hover {
-            background: #5568d3;
-        }
-        
-        .footer {
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 2px solid #e5e7eb;
-            text-align: center;
-            color: #6b7280;
-            font-size: 12px;
-        }
-    </style>
-</head>
-<body>
-    <button class="print-btn no-print" onclick="window.print()">🖨️ Print / Save as PDF</button>
+    doc.setFontSize(11);
+    doc.setFont(undefined, 'bold');
+    doc.setTextColor(...recColor);
+    doc.text(recText, 155, yPos);
     
-    <div class="header">
-        <h1>Church Interview Assessment Report</h1>
-        <p>Position: Church Administrative & Financial Analyst</p>
-        <p>Interview ID: ${interview.id}</p>
-    </div>
+    yPos += 10;
     
-    <!-- Basic Information -->
-    <div class="section">
-        <h2>📋 Basic Information</h2>
-        <div class="info-grid">
-            <div class="info-item">
-                <div class="info-label">Applicant Name</div>
-                <div class="info-value">${fullName}</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">Interview Date</div>
-                <div class="info-value">${date}</div>
-            </div>
-        </div>
-    </div>
+    // Remarks
+    if (interview.finalDecision?.remarks) {
+        doc.setFontSize(10);
+        doc.setFont(undefined, 'normal');
+        doc.setTextColor(...lightGray);
+        doc.text('Remarks:', 15, yPos);
+        yPos += 5;
+        
+        doc.setFontSize(9);
+        doc.setTextColor(...darkGray);
+        const remarksText = interview.finalDecision.remarks;
+        const splitRemarks = doc.splitTextToSize(remarksText, 180);
+        doc.text(splitRemarks, 15, yPos);
+        yPos += splitRemarks.length * 4;
+    }
     
-    <!-- Spiritual Assessment -->
-    <div class="section">
-        <h2>✝️ Spiritual & Character Assessment</h2>
-        <ul class="checkbox-list">
-            <li class="${interview.spiritualAssessment?.bornAgain ? '' : 'unchecked'}">
-                Born again with sound Christian values
-            </li>
-            <li class="${interview.spiritualAssessment?.activeChurch ? '' : 'unchecked'}">
-                Active church involvement
-            </li>
-            <li class="${interview.spiritualAssessment?.integrity ? '' : 'unchecked'}">
-                Integrity and fear of God
-            </li>
-            <li class="${interview.spiritualAssessment?.obedient ? '' : 'unchecked'}">
-                Obedient, teachable, respects authority
-            </li>
-            <li class="${interview.spiritualAssessment?.communication ? '' : 'unchecked'}">
-                Good communication and attitude
-            </li>
-        </ul>
-    </div>
+    // Footer
+    doc.setFontSize(8);
+    doc.setTextColor(...lightGray);
+    doc.text(`Generated: ${new Date().toLocaleString()}`, 105, 285, { align: 'center' });
+    doc.text('Church Interview Assessment System © 2026', 105, 290, { align: 'center' });
     
-    <!-- Administrative Skills -->
-    <div class="section">
-        <h2>💼 Administrative Skills</h2>
-        <div style="margin-bottom: 15px;">
-            <span class="score-box">Score: ${interview.scores?.administrative || 0}/50</span>
-        </div>
-        <table>
-            <thead>
-                <tr>
-                    <th>Area</th>
-                    <th>Score</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>Record keeping & documentation</td>
-                    <td class="score-cell">${interview.administrativeSkills?.skill1 || 0}/10</td>
-                </tr>
-                <tr>
-                    <td>Office organization & time management</td>
-                    <td class="score-cell">${interview.administrativeSkills?.skill2 || 0}/10</td>
-                </tr>
-                <tr>
-                    <td>Confidentiality & discretion</td>
-                    <td class="score-cell">${interview.administrativeSkills?.skill3 || 0}/10</td>
-                </tr>
-                <tr>
-                    <td>Computer skills (Word / Excel / Email)</td>
-                    <td class="score-cell">${interview.administrativeSkills?.skill4 || 0}/10</td>
-                </tr>
-                <tr>
-                    <td>Attention to details & accuracy</td>
-                    <td class="score-cell">${interview.administrativeSkills?.skill5 || 0}/10</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+    // Auto-download
+    const fileName = `Interview_${fullName.replace(/\s+/g, '_')}_${interview.id}.pdf`;
+    doc.save(fileName);
     
-    <!-- Financial Skills -->
-    <div class="section">
-        <h2>💰 Financial & Analytical Skills</h2>
-        <div style="margin-bottom: 15px;">
-            <span class="score-box">Score: ${interview.scores?.financial || 0}/50</span>
-        </div>
-        <table>
-            <thead>
-                <tr>
-                    <th>Area</th>
-                    <th>Score</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>Understanding of accounting principles</td>
-                    <td class="score-cell">${interview.financialSkills?.skill1 || 0}/10</td>
-                </tr>
-                <tr>
-                    <td>Budgeting & financial planning</td>
-                    <td class="score-cell">${interview.financialSkills?.skill2 || 0}/10</td>
-                </tr>
-                <tr>
-                    <td>Financial reporting & analysis</td>
-                    <td class="score-cell">${interview.financialSkills?.skill3 || 0}/10</td>
-                </tr>
-                <tr>
-                    <td>Spreadsheet proficiency & data analysis</td>
-                    <td class="score-cell">${interview.financialSkills?.skill4 || 0}/10</td>
-                </tr>
-                <tr>
-                    <td>Attention to financial details & accuracy</td>
-                    <td class="score-cell">${interview.financialSkills?.skill5 || 0}/10</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-    
-    <!-- Ethics Check -->
-    <div class="section">
-        <h2>⚖️ Ethics & Compliance Check</h2>
-        <div class="remarks-box">${interview.ethicsCheck || 'No response provided'}</div>
-    </div>
-    
-    <!-- Final Decision -->
-    <div class="section">
-        <h2>📊 Final Assessment & Recommendation</h2>
-        <div class="info-grid">
-            <div class="info-item">
-                <div class="info-label">Total Score</div>
-                <div class="info-value">
-                    <span class="score-box">${interview.scores?.total || 0}/100 (${Math.round((interview.scores?.total || 0))}%)</span>
-                </div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">Recommendation</div>
-                <div class="info-value">
-                    <span class="badge" style="${recBadgeClass}">${recText}</span>
-                </div>
-            </div>
-        </div>
-        <div style="margin-top: 20px;">
-            <div class="info-label">Overall Remarks</div>
-            <div class="remarks-box">${interview.finalDecision?.remarks || 'No remarks provided'}</div>
-        </div>
-        <div class="info-grid" style="margin-top: 20px;">
-            <div class="info-item">
-                <div class="info-label">Interviewer's Signature</div>
-                <div class="info-value">${interview.finalDecision?.interviewerSignature || 'Not signed'}</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">Signature Date</div>
-                <div class="info-value">${interview.finalDecision?.signatureDate || 'Not dated'}</div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="footer">
-        <p>Generated on ${new Date().toLocaleString()}</p>
-        <p>Church Interview Assessment System © 2026</p>
-    </div>
-</body>
-</html>
-    `;
-    
-    pdfWindow.document.write(htmlContent);
-    pdfWindow.document.close();
+    // Show success notification
+    showNotification('PDF downloaded successfully!', 'success');
 }
 
 // Data verification function
+function verifyDataAccess() {
+    console.log('=== DATA VERIFICATION ===');
+    
+    const results = [];
+    let hasIssues = false;
+    
+    // Check localStorage availability
+    try{
+        localStorage.setItem('test', 'test');
+        localStorage.removeItem('test');
+        results.push('✓ localStorage is accessible');
+    } catch (e) {
 function verifyDataAccess() {
     console.log('=== DATA VERIFICATION ===');
     
@@ -982,8 +843,136 @@ function exportAllData() {
         return;
     }
     
-    // Generate comprehensive PDF with all interviews
-    const pdfWindow = window.open('', '_blank');
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('landscape'); // Landscape for table
+    
+    const primaryColor = [102, 126, 234];
+    const darkGray = [55, 65, 81];
+    const lightGray = [156, 163, 175];
+    
+    // Header
+    doc.setFillColor(...primaryColor);
+    doc.rect(0, 0, 297, 30, 'F');
+    
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(20);
+    doc.setFont(undefined, 'bold');
+    doc.text('Complete Interview Assessment Report', 148.5, 12, { align: 'center' });
+    
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'normal');
+    doc.text(`Generated: ${new Date().toLocaleDateString()}`, 148.5, 20, { align: 'center' });
+    doc.text(`Total Interviews: ${allInterviews.length}`, 148.5, 25, { align: 'center' });
+    
+    // Summary Stats
+    const recommended = allInterviews.filter(i => 
+        i.finalDecision?.recommendation === 'strongly-recommend' || 
+        i.finalDecision?.recommendation === 'recommend'
+    ).length;
+    
+    const avgScore = Math.round(
+        allInterviews.reduce((sum, i) => sum + (i.scores?.total || 0), 0) / allInterviews.length
+    );
+    
+    let yPos = 40;
+    doc.setTextColor(...darkGray);
+    doc.setFontSize(11);
+    doc.setFont(undefined, 'bold');
+    doc.text(`Recommended: ${recommended}`, 15, yPos);
+    doc.text(`Average Score: ${avgScore}%`, 100, yPos);
+    
+    yPos += 8;
+    
+    // Prepare table data
+    const tableData = allInterviews.map((interview, index) => {
+        const fullName = `${interview.basicInfo?.firstName || ''} ${interview.basicInfo?.lastName || ''}`.trim();
+        const date = new Date(interview.timestamp).toLocaleDateString();
+        
+        let recText = '';
+        switch(interview.finalDecision?.recommendation) {
+            case 'strongly-recommend':
+                recText = 'Strongly Rec.';
+                break;
+            case 'recommend':
+                recText = 'Recommend';
+                break;
+            case 'consider':
+                recText = 'Consider';
+                break;
+            case 'not-recommend':
+                recText = 'Not Rec.';
+                break;
+            default:
+                recText = 'N/A';
+        }
+        
+        return [
+            index + 1,
+            fullName,
+            date,
+            `${interview.scores?.total || 0}`,
+            `${interview.scores?.administrative || 0}/50`,
+            `${interview.scores?.financial || 0}/50`,
+            recText
+        ];
+    });
+    
+    // Generate table
+    doc.autoTable({
+        startY: yPos,
+        head: [['#', 'Applicant Name', 'Date', 'Total', 'Admin', 'Finance', 'Recommendation']],
+        body: tableData,
+        theme: 'grid',
+        headStyles: {
+            fillColor: primaryColor,
+            fontSize: 10,
+            fontStyle: 'bold',
+            halign: 'center'
+        },
+        styles: {
+            fontSize: 9,
+            cellPadding: 4
+        },
+        columnStyles: {
+            0: { cellWidth: 12, halign: 'center' },
+            1: { cellWidth: 60 },
+            2: { cellWidth: 30, halign: 'center' },
+            3: { cellWidth: 20, halign: 'center', fontStyle: 'bold' },
+            4: { cellWidth: 25, halign: 'center' },
+            5: { cellWidth: 25, halign: 'center' },
+            6: { cellWidth: 35, halign: 'center', fontStyle: 'bold' }
+        },
+        margin: { left: 15, right: 15 },
+        alternateRowStyles: { fillColor: [249, 250, 252] }
+    });
+    
+    // Footer
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor(...lightGray);
+        doc.text(
+            `Page ${i} of ${pageCount}`,
+            148.5,
+            200,
+            { align: 'center' }
+        );
+        doc.text(
+            'Church Interview Assessment System © 2026',
+            148.5,
+            205,
+            { align: 'center' }
+        );
+    }
+    
+    // Auto-download
+    const fileName = `All_Interviews_${new Date().toISOString().split('T')[0]}.pdf`;
+    doc.save(fileName);
+    
+    // Show success notification
+    showNotification('PDF downloaded successfully!', 'success');
+}
     
     const today = new Date().toLocaleDateString();
     
@@ -1223,14 +1212,6 @@ function exportAllData() {
         <p>Church Interview Assessment System © 2026</p>
         <p>Total Records: ${allInterviews.length}</p>
     </div>
-</body>
-</html>
-    `;
-    
-    pdfWindow.document.write(htmlContent);
-    pdfWindow.document.close();
-}
-
 function deleteInterview(id) {
     if (!confirm('Are you sure you want to delete this interview? This action cannot be undone.')) {
         return;
