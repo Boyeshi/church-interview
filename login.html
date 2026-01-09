@@ -314,22 +314,42 @@
         function handleLogin(event) {
             event.preventDefault();
             
+            console.log('=== LOGIN ATTEMPT ===');
+            
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
+            
+            console.log('Username entered:', username);
+            console.log('Password length:', password.length);
             
             // Admin credentials
             const ADMIN_USERNAME = 'Elroi16';
             const ADMIN_PASSWORD = 'Elro1andPh1l2026@';
             
+            console.log('Expected username:', ADMIN_USERNAME);
+            console.log('Username match:', username === ADMIN_USERNAME);
+            console.log('Password match:', password === ADMIN_PASSWORD);
+            
             if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+                console.log('Credentials valid! Creating session...');
+                
                 // Create session
                 sessionStorage.setItem('adminLoggedIn', 'true');
-                sessionStorage.setItem('adminLoginTime', Date.now());
+                sessionStorage.setItem('adminLoginTime', Date.now().toString());
                 sessionStorage.setItem('adminUsername', username);
+                
+                // Verify session was set
+                console.log('Session created:');
+                console.log('  adminLoggedIn:', sessionStorage.getItem('adminLoggedIn'));
+                console.log('  adminLoginTime:', sessionStorage.getItem('adminLoginTime'));
+                console.log('  adminUsername:', sessionStorage.getItem('adminUsername'));
+                
+                console.log('Redirecting to admin.html...');
                 
                 // Redirect to admin dashboard
                 window.location.href = 'admin.html';
             } else {
+                console.error('Invalid credentials');
                 showError('Invalid username or password. Please try again.');
                 document.getElementById('password').value = '';
                 document.getElementById('password').focus();

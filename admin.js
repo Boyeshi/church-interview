@@ -4,7 +4,7 @@
 let allInterviews = [];
 let filteredInterviews = [];
 
-// Secure authentication check - runs before DOM is ready
+// Secure authentication check - runs immediately
 (function() {
     console.log('=== ADMIN AUTHENTICATION CHECK ===');
     
@@ -28,26 +28,43 @@ let filteredInterviews = [];
     console.log('=== AUTHENTICATION CHECK COMPLETE ===');
 })();
 
-// Initialize dashboard when DOM is ready
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('=== DOM READY - INITIALIZING DASHBOARD ===');
+// Dashboard initialization function
+function initializeDashboard() {
+    console.log('=== INITIALIZING DASHBOARD ===');
+    console.log('Document readyState:', document.readyState);
     
     // Set admin name in UI
     const username = sessionStorage.getItem('adminUsername');
+    console.log('Setting admin name:', username);
+    
     if (username) {
         const nameElement = document.getElementById('adminName');
+        console.log('adminName element:', nameElement);
+        
         if (nameElement) {
             nameElement.textContent = username;
-            console.log('Admin name set to:', username);
+            console.log('Admin name successfully set to:', username);
         } else {
-            console.error('adminName element not found!');
+            console.error('adminName element not found in DOM!');
+            console.log('Available elements with IDs:', Array.from(document.querySelectorAll('[id]')).map(el => el.id));
         }
+    } else {
+        console.error('No username in sessionStorage!');
     }
     
     // Load dashboard data
     console.log('Loading dashboard...');
     loadDashboard();
-});
+}
+
+// Handle DOM ready state - works whether DOM is already loaded or still loading
+if (document.readyState === 'loading') {
+    console.log('DOM still loading, adding event listener');
+    document.addEventListener('DOMContentLoaded', initializeDashboard);
+} else {
+    console.log('DOM already loaded, initializing immediately');
+    initializeDashboard();
+}
 
 function loadDashboard() {
     console.log('=== LOADING ADMIN DASHBOARD ===');
@@ -475,6 +492,69 @@ function clearFilters() {
     document.getElementById('dateFilter').value = '';
     filteredInterviews = [...allInterviews];
     displayInterviews();
+}
+
+// Add test interview data for debugging/testing
+function addTestInterview() {
+    if (!confirm('Add a test interview to the system? This is for testing purposes.')) {
+        return;
+    }
+    
+    const testInterview = {
+        id: 'TEST-' + Date.now(),
+        timestamp: new Date().toISOString(),
+        savedAt: new Date().toISOString(),
+        basicInfo: {
+            firstName: 'Test',
+            lastName: 'Applicant',
+            fullName: 'Test Applicant'
+        },
+        spiritualAssessment: {
+            bornAgain: true,
+            churchInvolvement: true,
+            integrity: true,
+            obedient: true,
+            communication: true
+        },
+        administrativeSkills: {
+            recordKeeping: 8,
+            officeOrganization: 6,
+            confidentiality: 10,
+            computerSkills: 8,
+            attention: 8,
+            total: 40
+        },
+        financialSkills: {
+            accounting: 8,
+            budgeting: 6,
+            accuracy: 10,
+            integrity: 10,
+            problemSolving: 6,
+            total: 40
+        },
+        ethicsResponse: 'I would ensure all confidential information is kept secure and only shared with authorized personnel. I understand the importance of maintaining trust and confidentiality in handling church financial matters.',
+        finalDecision: {
+            recommendation: 'recommend',
+            totalScore: 80,
+            overallRemarks: 'Test interview - demonstrates good skills and spiritual foundation',
+            interviewerSignature: 'Admin Test',
+            signatureDate: new Date().toISOString().split('T')[0]
+        }
+    };
+    
+    try {
+        let interviews = JSON.parse(localStorage.getItem('churchInterviews')) || [];
+        interviews.push(testInterview);
+        localStorage.setItem('churchInterviews', JSON.stringify(interviews));
+        
+        console.log('Test interview added successfully');
+        alert('Test interview added! Reloading dashboard...');
+        
+        loadDashboard();
+    } catch (error) {
+        console.error('Error adding test interview:', error);
+        alert('Error adding test interview: ' + error.message);
+    }
 }
 
 function sortInterviews() {
