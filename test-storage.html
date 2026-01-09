@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>localStorage Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .box {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+        pre {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Church Interview Storage Test</h1>
+    
+    <div class="box">
+        <h2>Storage Status</h2>
+        <p id="storageStatus">Checking...</p>
+    </div>
+    
+    <div class="box">
+        <h2>Actions</h2>
+        <button onclick="testWrite()">Test Write Interview</button>
+        <button onclick="testRead()">Test Read Interviews</button>
+        <button onclick="clearData()">Clear All Data</button>
+        <button onclick="checkData()">Check Data</button>
+    </div>
+    
+    <div class="box">
+        <h2>Results</h2>
+        <div id="results"></div>
+    </div>
+
+    <script>
+        function log(message, isError = false) {
+            const results = document.getElementById('results');
+            const p = document.createElement('p');
+            p.className = isError ? 'error' : 'success';
+            p.textContent = message;
+            results.appendChild(p);
+        }
+
+        function checkStorageSupport() {
+            try {
+                localStorage.setItem('test', 'test');
+                localStorage.removeItem('test');
+                document.getElementById('storageStatus').innerHTML = 
+                    '<span class="success">✓ localStorage is supported and working</span>';
+                return true;
+            } catch (e) {
+                document.getElementById('storageStatus').innerHTML = 
+                    '<span class="error">✗ localStorage is NOT available: ' + e.message + '</span>';
+                return false;
+            }
+        }
+
+        function testWrite() {
+            document.getElementById('results').innerHTML = '';
+            log('Starting write test...');
+            
+            try {
+                // Get existing interviews
+                let interviews = JSON.parse(localStorage.getItem('churchInterviews')) || [];
+                log(`Found ${interviews.length} existing interview(s)`);
+                
+                // Create test interview
+                const testInterview = {
+                    id: 'INT-' + Date.now(),
+                    savedAt: new Date().toISOString(),
+                    timestamp: new Date().toISOString(),
+                    basicInfo: {
+                        firstName: 'Test',
+                        lastName: 'User',
+                        fullName: 'Test User',
+                        date: new Date().toISOString().split('T')[0],
+                        interviewer: 'Admin Tester'
+                    },
+                    spiritualAssessment: {
+                        bornAgain: true,
+                        activeChurch: true,
+                        integrity: true,
+                        obedient: true,
+                        communication: true
+                    },
+                    administrativeSkills: {
+                        skill1: 8,
+                        skill2: 7,
+                        skill3: 9,
+                        skill4: 8,
+                        skill5: 7
+                    },
+                    financialSkills: {
+                        skill1: 8,
+                        skill2: 9,
+                        skill3: 7,
+                        skill4: 8,
+                        skill5: 9
+                    },
+                    ethicsCheck: 'Test ethics response',
+                    finalDecision: {
+                        recommendation: 'recommend',
+                        remarks: 'Test remarks',
+                        interviewerSignature: 'Test Signature',
+                        signatureDate: new Date().toISOString().split('T')[0]
+                    },
+                    scores: {
+                        administrative: 39,
+                        financial: 41,
+                        total: 80
+                    }
+                };
+                
+                // Add to interviews
+                interviews.push(testInterview);
+                
+                // Save to localStorage
+                localStorage.setItem('churchInterviews', JSON.stringify(interviews));
+                
+                log(`✓ Successfully saved interview with ID: ${testInterview.id}`);
+                log(`✓ Total interviews in storage: ${interviews.length}`);
+                
+            } catch (error) {
+                log('✗ Error writing: ' + error.message, true);
+                console.error(error);
+            }
+        }
+
+        function testRead() {
+            document.getElementById('results').innerHTML = '';
+            log('Starting read test...');
+            
+            try {
+                const data = localStorage.getItem('churchInterviews');
+                
+                if (!data) {
+                    log('No interviews found in storage', true);
+                    return;
+                }
+                
+                const interviews = JSON.parse(data);
+                log(`✓ Found ${interviews.length} interview(s) in storage`);
+                
+                interviews.forEach((interview, index) => {
+                    log(`Interview ${index + 1}: ${interview.basicInfo?.fullName || 'Unknown'} (${interview.id})`);
+                });
+                
+                // Display full data
+                const pre = document.createElement('pre');
+                pre.textContent = JSON.stringify(interviews, null, 2);
+                document.getElementById('results').appendChild(pre);
+                
+            } catch (error) {
+                log('✗ Error reading: ' + error.message, true);
+                console.error(error);
+            }
+        }
+
+        function clearData() {
+            if (confirm('Are you sure you want to clear all interview data?')) {
+                document.getElementById('results').innerHTML = '';
+                localStorage.removeItem('churchInterviews');
+                log('✓ All interview data cleared');
+            }
+        }
+
+        function checkData() {
+            document.getElementById('results').innerHTML = '';
+            log('Checking all localStorage keys...');
+            
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                const value = localStorage.getItem(key);
+                log(`Key: ${key} (${value.length} characters)`);
+            }
+            
+            if (localStorage.length === 0) {
+                log('No data in localStorage', true);
+            }
+        }
+
+        // Check on load
+        window.addEventListener('DOMContentLoaded', () => {
+            checkStorageSupport();
+            checkData();
+        });
+    </script>
+</body>
+</html>

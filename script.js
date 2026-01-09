@@ -173,20 +173,28 @@ function setupScrollAnimations() {
 
 // -------------------- Form Management --------------------
 function saveForm() {
+    console.log('=== SAVE FORM INITIATED ===');
     const formData = gatherFormData();
     
+    console.log('Validating form data...');
     // Validate required fields
     if (!validateForm(formData)) {
+        console.error('Validation failed');
         showNotification('Please fill in all required fields', 'error');
         return;
     }
-
+    
+    console.log('Validation passed, saving to history...');
     // Save to interview history
-    saveToHistory(formData);
+    const success = saveToHistory(formData);
     
-    // Also create downloadable JSON
-    downloadFormData(formData);
+    if (!success) {
+        console.error('Failed to save to history');
+        showNotification('Error saving assessment. Please try again.', 'error');
+        return;
+    }
     
+    console.log('Save successful!');
     // Clear auto-save after successful save
     localStorage.removeItem('churchAssessmentAutoSave');
     
@@ -199,23 +207,33 @@ function saveForm() {
             updateAllScores();
         }
     }, 1000);
+    
+    console.log('=== SAVE FORM COMPLETED ===');
 }
 
 function saveToHistory(formData) {
-    // Get existing interviews from localStorage
-    let interviews = JSON.parse(localStorage.getItem('churchInterviews')) || [];
-    
-    // Add unique ID to the interview
-    formData.id = 'INT-' + Date.now();
-    formData.savedAt = new Date().toISOString();
-    
-    // Add to history
-    interviews.push(formData);
-    
-    // Save back to localStorage
-    localStorage.setItem('churchInterviews', JSON.stringify(interviews));
-    
-    console.log('Interview saved to history:', formData.id);
+    try {
+        // Get existing interviews from localStorage
+        let interviews = JSON.parse(localStorage.getItem('churchInterviews')) || [];
+        
+        // Add unique ID to the interview
+        formData.id = 'INT-' + Date.now();
+        formData.savedAt = new Date().toISOString();
+        
+        // Add to history
+        interviews.push(formData);
+        
+        // Save back to localStorage
+        localStorage.setItem('churchInterviews', JSON.stringify(interviews));
+        
+        console.log('Interview saved to history:', formData.id);
+        console.log('Total interviews in system:', interviews.length);
+        
+        return true;
+    } catch (error) {
+        console.error('Error saving interview to history:', error);
+        return false;
+    }
 }
 
 function gatherFormData() {
@@ -263,13 +281,28 @@ function gatherFormData() {
         const selected = document.querySelector(`input[name="financial${i}"]:checked`);
         formData.financialSkills[`skill${i}`] = selected ? parseInt(selected.value) : 0;
     }
+    
+    console.log('Form data gathered:', formData);
 
     return formData;
 }
 
 function validateForm(formData) {
     // Check required fields
-    if (!formData.basicInfo.firstName || !formData.basicInfo.lastName || !formData.basicInfo.date || !formData.basicInfo.interviewer) {
+    if (!formData.basicInfo.firstName) {
+        console.error('Validation error: First name is required');
+        return false;
+    }
+    if (!formData.basicInfo.lastName) {
+        console.error('Validation error: Last name is required');
+        return false;
+    }
+    if (!formData.basicInfo.date) {
+        console.error('Validation error: Date is required');
+        return false;
+    }
+    if (!formData.basicInfo.interviewer) {
+        console.error('Validation error: Interviewer is required');
         return false;
     }
 
@@ -278,30 +311,18 @@ function validateForm(formData) {
     
     // Check ethics response
     if (!formData.ethicsCheck || formData.ethicsCheck.trim() === '') {
+        console.error('Validation error: Ethics response is required');
         return false;
     }
 
     // Check final decision
     if (!formData.finalDecision.recommendation) {
+        console.error('Validation error: Final decision recommendation is required');
         return false;
     }
-
+    
+    console.log('All validations passed!');
     return true;
-}
-
-function downloadFormData(formData) {
-    const dataStr = JSON.stringify(formData, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(dataBlob);
-    
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `church_assessment_${formData.basicInfo.lastName}_${formData.basicInfo.firstName}_${Date.now()}.json`;
-    
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
 }
 
 function resetForm() {
