@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Data Storage</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+        pre {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+        .success { color: #10b981; font-weight: bold; }
+        .error { color: #ef4444; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>Church Interview Data Storage Test</h1>
+    
+    <div class="test-box">
+        <h2>Current Data Status</h2>
+        <div id="status"></div>
+    </div>
+    
+    <div class="test-box">
+        <h2>Actions</h2>
+        <button onclick="checkData()">🔍 Check Data</button>
+        <button onclick="addTestInterview()">➕ Add Test Interview</button>
+        <button onclick="clearAllData()">🗑️ Clear All Data</button>
+        <button onclick="exportData()">📥 Export Data</button>
+    </div>
+    
+    <div class="test-box">
+        <h2>Data Content</h2>
+        <pre id="dataContent">No data to display</pre>
+    </div>
+    
+    <script>
+        function checkData() {
+            const status = document.getElementById('status');
+            const content = document.getElementById('dataContent');
+            
+            try {
+                // Test localStorage access
+                localStorage.setItem('test', 'test');
+                localStorage.removeItem('test');
+                
+                // Get church interviews
+                const rawData = localStorage.getItem('churchInterviews');
+                
+                if (!rawData) {
+                    status.innerHTML = '<span class="error">❌ No data found in localStorage</span>';
+                    content.textContent = 'localStorage key "churchInterviews" is empty';
+                } else {
+                    const interviews = JSON.parse(rawData);
+                    status.innerHTML = `<span class="success">✅ Found ${interviews.length} interview(s)</span>`;
+                    content.textContent = JSON.stringify(interviews, null, 2);
+                }
+                
+                // Show domain info
+                status.innerHTML += `<br><br>Domain: ${window.location.hostname}<br>Protocol: ${window.location.protocol}`;
+                
+            } catch (error) {
+                status.innerHTML = `<span class="error">❌ Error: ${error.message}</span>`;
+                content.textContent = error.stack;
+            }
+        }
+        
+        function addTestInterview() {
+            try {
+                const testInterview = {
+                    id: 'test_' + Date.now(),
+                    basicInfo: {
+                        firstName: 'Test',
+                        lastName: 'User',
+                        fullName: 'Test User',
+                        email: 'test@example.com',
+                        phone: '123-456-7890',
+                        date: new Date().toISOString().split('T')[0],
+                        position: 'Test Position'
+                    },
+                    spiritualAssessment: {
+                        isBornAgain: true,
+                        hasExperience: true,
+                        isCommitted: true
+                    },
+                    finalDecision: {
+                        totalScore: 85,
+                        recommendation: 'recommend'
+                    }
+                };
+                
+                const rawData = localStorage.getItem('churchInterviews');
+                const interviews = rawData ? JSON.parse(rawData) : [];
+                interviews.push(testInterview);
+                localStorage.setItem('churchInterviews', JSON.stringify(interviews));
+                
+                alert('✅ Test interview added successfully!');
+                checkData();
+            } catch (error) {
+                alert('❌ Error adding test interview: ' + error.message);
+            }
+        }
+        
+        function clearAllData() {
+            if (confirm('Are you sure you want to clear ALL interview data? This cannot be undone!')) {
+                localStorage.removeItem('churchInterviews');
+                alert('✅ All data cleared');
+                checkData();
+            }
+        }
+        
+        function exportData() {
+            const rawData = localStorage.getItem('churchInterviews');
+            if (!rawData) {
+                alert('No data to export');
+                return;
+            }
+            
+            const blob = new Blob([rawData], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'church-interviews-backup.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        // Auto-check on load
+        window.onload = checkData;
+    </script>
+</body>
+</html>
