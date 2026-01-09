@@ -17,10 +17,11 @@ function initializeForm() {
 }
 
 function setCurrentDate() {
-    const dateInput = document.getElementById('date');
+    // Date is now only in the signature section at the bottom
+    const signatureDateInput = document.getElementById('signatureDate');
     const today = new Date().toISOString().split('T')[0];
-    if (!dateInput.value) {
-        dateInput.value = today;
+    if (signatureDateInput && !signatureDateInput.value) {
+        signatureDateInput.value = today;
     }
 }
 
@@ -198,15 +199,15 @@ function saveForm() {
     // Clear auto-save after successful save
     localStorage.removeItem('churchAssessmentAutoSave');
     
-    showNotification('Assessment saved successfully! Interview recorded in system.', 'success');
+    showNotification('Assessment saved successfully! Form will reset for next interview.', 'success');
     
-    // Optional: Reset form after save
+    // Auto-reset form after save
     setTimeout(() => {
-        if (confirm('Interview saved! Would you like to reset the form for a new interview?')) {
-            document.getElementById('assessmentForm').reset();
-            updateAllScores();
-        }
-    }, 1000);
+        document.getElementById('assessmentForm').reset();
+        updateAllScores();
+        setCurrentDate(); // Set date for next interview
+        console.log('Form auto-reset for next interview');
+    }, 1500);
     
     console.log('=== SAVE FORM COMPLETED ===');
 }
@@ -243,9 +244,7 @@ function gatherFormData() {
         basicInfo: {
             firstName: document.getElementById('firstName').value,
             lastName: document.getElementById('lastName').value,
-            fullName: document.getElementById('firstName').value + ' ' + document.getElementById('lastName').value,
-            date: document.getElementById('date').value,
-            interviewer: document.getElementById('interviewer').value
+            fullName: document.getElementById('firstName').value + ' ' + document.getElementById('lastName').value
         },
         spiritualAssessment: {
             bornAgain: document.querySelector('input[name="spiritual1"]').checked,
@@ -297,14 +296,6 @@ function validateForm(formData) {
         console.error('Validation error: Last name is required');
         return false;
     }
-    if (!formData.basicInfo.date) {
-        console.error('Validation error: Date is required');
-        return false;
-    }
-    if (!formData.basicInfo.interviewer) {
-        console.error('Validation error: Interviewer is required');
-        return false;
-    }
 
     // Spiritual assessment checkboxes are optional - they record the assessment
     // No validation needed for spiritual checkboxes
@@ -338,6 +329,38 @@ function resetForm() {
     showNotification('Form has been reset', 'info');
 }
 
+function resetAdminSection() {
+    if (!confirm('Reset Section B: Administrative Skills only?')) {
+        return;
+    }
+    
+    // Clear all admin radio buttons
+    const adminInputs = document.querySelectorAll('input[name^="admin"]');
+    adminInputs.forEach(input => input.checked = false);
+    
+    // Reset score
+    document.getElementById('adminTotal').textContent = '0';
+    updateSummary();
+    
+    showNotification('Section B reset', 'info');
+}
+
+function resetFinancialSection() {
+    if (!confirm('Reset Section C: Financial & Analytical Skills only?')) {
+        return;
+    }
+    
+    // Clear all financial radio buttons
+    const financialInputs = document.querySelectorAll('input[name^="financial"]');
+    financialInputs.forEach(input => input.checked = false);
+    
+    // Reset score
+    document.getElementById('financialTotal').textContent = '0';
+    updateSummary();
+    
+    showNotification('Section C reset', 'info');
+}
+
 function autoSave() {
     const formData = gatherFormData();
     localStorage.setItem('churchAssessmentAutoSave', JSON.stringify(formData));
@@ -367,8 +390,6 @@ function restoreFormData(data) {
     if (data.basicInfo) {
         document.getElementById('firstName').value = data.basicInfo.firstName || '';
         document.getElementById('lastName').value = data.basicInfo.lastName || '';
-        document.getElementById('date').value = data.basicInfo.date || '';
-        document.getElementById('interviewer').value = data.basicInfo.interviewer || '';
     }
 
     // Restore spiritual assessment

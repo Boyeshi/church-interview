@@ -186,11 +186,47 @@ body {
     font-size: 1.25rem;
     font-weight: 700;
     color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
 }
 
 .score-value {
     color: var(--primary-dark);
     font-size: 1.5rem;
+}
+
+/* Section Reset Button */
+.btn-reset-section {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #6b7280;
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: var(--transition);
+    white-space: nowrap;
+}
+
+.btn-reset-section:hover {
+    background: #f9fafb;
+    border-color: #9ca3af;
+    color: #374151;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-reset-section:active {
+    transform: translateY(0);
+}
+
+.btn-reset-section svg {
+    flex-shrink: 0;
 }
 
 /* --------------------- Form Groups --------------------- */
