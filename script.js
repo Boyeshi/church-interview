@@ -273,12 +273,9 @@ function validateForm(formData) {
         return false;
     }
 
-    // Check spiritual assessment (all must be checked)
-    const spiritualChecks = Object.values(formData.spiritualAssessment);
-    if (!spiritualChecks.every(checked => checked === true)) {
-        return false;
-    }
-
+    // Spiritual assessment checkboxes are optional - they record the assessment
+    // No validation needed for spiritual checkboxes
+    
     // Check ethics response
     if (!formData.ethicsCheck || formData.ethicsCheck.trim() === '') {
         return false;
