@@ -2,19 +2,28 @@
 
 A modern, professional web application for conducting and documenting church interviews for the position of Church Administrative & Financial Analyst.
 
+## 🚀 Quick Links
+
+- **[Fix Summary](FIX_SUMMARY.md)** - Latest changes and improvements
+- **[Testing Guide](TESTING_GUIDE.md)** - How to test the system
+- **[Admin Guide](ADMIN_GUIDE.md)** - Admin dashboard documentation
+- **[Deployment Guide](DEPLOYMENT.md)** - Deployment instructions
+- **[Quick Test Tool](quick-test.html)** - Interactive testing interface
+- **[Storage Test](test-storage.html)** - localStorage testing page
+
 ## ✨ Features
 
 ### 🎯 Core Functionality
 - **Comprehensive Assessment Form** - Structured evaluation across multiple dimensions
 - **Real-time Score Calculation** - Automatic calculation and display of assessment scores
 - **Auto-save Functionality** - Never lose your work with automatic data persistence
-- **Print-friendly Design** - Professional printing layout for physical records
-- **Data Export** - Download assessments as JSON for record keeping
+- **Secure Admin Dashboard** - View and manage all interview records
+- **Data Persistence** - All interviews saved to browser localStorage
 - **Responsive Design** - Works seamlessly on desktop, tablet, and mobile devices
 
 ### 📋 Assessment Sections
 
-1. **Spiritual & Character Assessment** (Mandatory)
+1. **Spiritual & Character Assessment** (Optional - Records as-is)
    - Born again with sound Christian values
    - Active church involvement
    - Integrity and fear of God
@@ -35,11 +44,11 @@ A modern, professional web application for conducting and documenting church int
    - Integrity in handling church funds
    - Financial problem solving & analysis
 
-4. **Ethics Check**
+4. **Ethics Check** (Required)
    - Open-ended question on handling confidential information
 
-5. **Final Decision**
-   - Recommendation levels: Strongly Recommend, Recommend, Consider, Not Recommend
+5. **Final Decision** (Required)
+   - Recommendation levels: Strongly Recommend, Recommend, Not Recommend
    - Overall remarks section
    - Interviewer signature and date
 
