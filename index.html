@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Professional church interview assessment tool for evaluating candidates for Church Administrative & Financial Analyst position">
+    <meta name="keywords" content="church, interview, assessment, administrative, financial, analyst">
+    <title>Church Interview Assessment Sheet</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="header-content">
+                <h1>Church Interview Assessment Sheet</h1>
+                <p class="subtitle">Position: Church Administrative & Financial Analyst</p>
+            </div>
+            <button class="print-btn" onclick="window.print()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"></path>
+                    <rect x="6" y="14" width="12" height="8"></rect>
+                </svg>
+                Print
+            </button>
+        </header>
+
+        <form id="assessmentForm" class="assessment-form">
+            <!-- Basic Information -->
+            <section class="form-section">
+                <div class="section-header">
+                    <h2>Basic Information</h2>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="applicantName">Applicant Name</label>
+                        <input type="text" id="applicantName" name="applicantName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="date">Date</label>
+                        <input type="date" id="date" name="date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="interviewer">Interviewer</label>
+                        <input type="text" id="interviewer" name="interviewer" required>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section A: Spiritual & Character Assessment -->
+            <section class="form-section">
+                <div class="section-header">
+                    <h2>A. Spiritual & Character Assessment</h2>
+                    <span class="badge badge-mandatory">MANDATORY</span>
+                </div>
+                <div class="checkbox-group">
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="spiritual1" required>
+                        <span class="checkmark"></span>
+                        <span class="label-text">Born again with sound Christian values</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="spiritual2" required>
+                        <span class="checkmark"></span>
+                        <span class="label-text">Active church involvement</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="spiritual3" required>
+                        <span class="checkmark"></span>
+                        <span class="label-text">Integrity and fear of God</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="spiritual4" required>
+                        <span class="checkmark"></span>
+                        <span class="label-text">Obedient, teachable, respects authority</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="spiritual5" required>
+                        <span class="checkmark"></span>
+                        <span class="label-text">Good communication and attitude</span>
+                    </label>
+                </div>
+            </section>
+
+            <!-- Section B: Administrative Skills -->
+            <section class="form-section">
+                <div class="section-header">
+                    <h2>B. Administrative Skills</h2>
+                    <div class="score-display">
+                        <span>Total: <span id="adminTotal" class="score-value">0</span>/50</span>
+                    </div>
+                </div>
+                <div class="rating-table">
+                    <div class="rating-row rating-header">
+                        <div class="rating-label">Area</div>
+                        <div class="rating-scores">
+                            <span>2</span>
+                            <span>4</span>
+                            <span>6</span>
+                            <span>8</span>
+                            <span>10</span>
+                        </div>
+                    </div>
+                    <div class="rating-row">
+                        <div class="rating-label">Record keeping & documentation</div>
+                        <div class="rating-scores">
+                            <label><input type="radio" name="admin1" value="2" data-group="admin"><span>2</span></label>
+                            <label><input type="radio" name="admin1" value="4" data-group="admin"><span>4</span></label>
+                            <label><input type="radio" name="admin1" value="6" data-group="admin"><span>6</span></label>
+                            <label><input type="radio" name="admin1" value="8" data-group="admin"><span>8</span></label>
+                            <label><input type="radio" name="admin1" value="10" data-group="admin"><span>10</span></label>
+                        </div>
+                    </div>
+                    <div class="rating-row">
+                        <div class="rating-label">Office organization & time management</div>
+                        <div class="rating-scores">
+                            <label><input type="radio" name="admin2" value="2" data-group="admin"><span>2</span></label>
+                            <label><input type="radio" name="admin2" value="4" data-group="admin"><span>4</span></label>
+                            <label><input type="radio" name="admin2" value="6" data-group="admin"><span>6</span></label>
+                            <label><input type="radio" name="admin2" value="8" data-group="admin"><span>8</span></label>
+                            <label><input type="radio" name="admin2" value="10" data-group="admin"><span>10</span></label>
+                        </div>
+                    </div>
+                    <div class="rating-row">
+                        <div class="rating-label">Confidentiality & discretion</div>
+                        <div class="rating-scores">
+                            <label><input type="radio" name="admin3" value="2" data-group="admin"><span>2</span></label>
+                            <label><input type="radio" name="admin3" value="4" data-group="admin"><span>4</span></label>
+                            <label><input type="radio" name="admin3" value="6" data-group="admin"><span>6</span></label>
+                            <label><input type="radio" name="admin3" value="8" data-group="admin"><span>8</span></label>
+                            <label><input type="radio" name="admin3" value="10" data-group="admin"><span>10</span></label>
+                        </div>
+                    </div>
+                    <div class="rating-row">
+                        <div class="rating-label">Computer skills (Word / Excel / Email)</div>
+                        <div class="rating-scores">
+                            <label><input type="radio" name="admin4" value="2" data-group="admin"><span>2</span></label>
+                            <label><input type="radio" name="admin4" value="4" data-group="admin"><span>4</span></label>
+                            <label><input type="radio" name="admin4" value="6" data-group="admin"><span>6</span></label>
+                            <label><input type="radio" name="admin4" value="8" data-group="admin"><span>8</span></label>
+                            <label><input type="radio" name="admin4" value="10" data-group="admin"><span>10</span></label>
+                        </div>
+                    </div>
+                    <div class="rating-row">
+                        <div class="rating-label">Attention to details & accuracy</div>
+                        <div class="rating-scores">
+                            <label><input type="radio" name="admin5" value="2" data-group="admin"><span>2</span></label>
+                            <label><input type="radio" name="admin5" value="4" data-group="admin"><span>4</span></label>
+                            <label><input type="radio" name="admin5" value="6" data-group="admin"><span>6</span></label>
+                            <label><input type="radio" name="admin5" value="8" data-group="admin"><span>8</span></label>
+                            <label><input type="radio" name="admin5" value="10" data-group="admin"><span>10</span></label>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section C: Financial & Analytical Skills -->
+            <section class="form-section">
+                <div class="section-header">
+                    <h2>C. Financial & Analytical Skills</h2>
+                    <div class="score-display">
+                        <span>Total: <span id="financialTotal" class="score-value">0</span>/50</span>
+                    </div>
+                </div>
+                <div class="rating-table">
+                    <div class="rating-row rating-header">
+                        <div class="rating-label">Area</div>
+                        <div class="rating-scores">
+                            <span>2</span>
+                            <span>4</span>
+                            <span>6</span>
+                            <span>8</span>
+                            <span>10</span>
+                        </div>
+                    </div>
+                    <div class="rating-row">
+                        <div class="rating-label">Basic accounting knowledge</div>
+                        <div class="rating-scores">
+                            <label><input type="radio" name="financial1" value="2" data-group="financial"><span>2</span></label>
+                            <label><input type="radio" name="financial1" value="4" data-group="financial"><span>4</span></label>
+                            <label><input type="radio" name="financial1" value="6" data-group="financial"><span>6</span></label>
+                            <label><input type="radio" name="financial1" value="8" data-group="financial"><span>8</span></label>
+                            <label><input type="radio" name="financial1" value="10" data-group="financial"><span>10</span></label>
+                        </div>
+                    </div>
+                    <div class="rating-row">
+                        <div class="rating-label">Budgeting & expense tracking</div>
+                        <div class="rating-scores">
+                            <label><input type="radio" name="financial2" value="2" data-group="financial"><span>2</span></label>
+                            <label><input type="radio" name="financial2" value="4" data-group="financial"><span>4</span></label>
+                            <label><input type="radio" name="financial2" value="6" data-group="financial"><span>6</span></label>
+                            <label><input type="radio" name="financial2" value="8" data-group="financial"><span>8</span></label>
+                            <label><input type="radio" name="financial2" value="10" data-group="financial"><span>10</span></label>
+                        </div>
+                    </div>
+                    <div class="rating-row">
+                        <div class="rating-label">Financial accuracy & reporting</div>
+                        <div class="rating-scores">
+                            <label><input type="radio" name="financial3" value="2" data-group="financial"><span>2</span></label>
+                            <label><input type="radio" name="financial3" value="4" data-group="financial"><span>4</span></label>
+                            <label><input type="radio" name="financial3" value="6" data-group="financial"><span>6</span></label>
+                            <label><input type="radio" name="financial3" value="8" data-group="financial"><span>8</span></label>
+                            <label><input type="radio" name="financial3" value="10" data-group="financial"><span>10</span></label>
+                        </div>
+                    </div>
+                    <div class="rating-row">
+                        <div class="rating-label">Integrity in handling church funds</div>
+                        <div class="rating-scores">
+                            <label><input type="radio" name="financial4" value="2" data-group="financial"><span>2</span></label>
+                            <label><input type="radio" name="financial4" value="4" data-group="financial"><span>4</span></label>
+                            <label><input type="radio" name="financial4" value="6" data-group="financial"><span>6</span></label>
+                            <label><input type="radio" name="financial4" value="8" data-group="financial"><span>8</span></label>
+                            <label><input type="radio" name="financial4" value="10" data-group="financial"><span>10</span></label>
+                        </div>
+                    </div>
+                    <div class="rating-row">
+                        <div class="rating-label">Financial problem solving & analysis</div>
+                        <div class="rating-scores">
+                            <label><input type="radio" name="financial5" value="2" data-group="financial"><span>2</span></label>
+                            <label><input type="radio" name="financial5" value="4" data-group="financial"><span>4</span></label>
+                            <label><input type="radio" name="financial5" value="6" data-group="financial"><span>6</span></label>
+                            <label><input type="radio" name="financial5" value="8" data-group="financial"><span>8</span></label>
+                            <label><input type="radio" name="financial5" value="10" data-group="financial"><span>10</span></label>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section D: Ethics Check -->
+            <section class="form-section">
+                <div class="section-header">
+                    <h2>D. Ethics Check</h2>
+                </div>
+                <div class="form-group">
+                    <label for="ethicsResponse">How would you handle confidential church financial information?</label>
+                    <textarea id="ethicsResponse" name="ethicsResponse" rows="4" required></textarea>
+                </div>
+            </section>
+
+            <!-- Section E: Final Decision -->
+            <section class="form-section">
+                <div class="section-header">
+                    <h2>E. Final Decision</h2>
+                </div>
+                <div class="radio-group-horizontal">
+                    <label class="radio-item">
+                        <input type="radio" name="finalDecision" value="strongly-recommend" required>
+                        <span class="radio-custom"></span>
+                        <span class="label-text">Strongly Recommend</span>
+                    </label>
+                    <label class="radio-item">
+                        <input type="radio" name="finalDecision" value="recommend">
+                        <span class="radio-custom"></span>
+                        <span class="label-text">Recommend</span>
+                    </label>
+                    <label class="radio-item">
+                        <input type="radio" name="finalDecision" value="consider">
+                        <span class="radio-custom"></span>
+                        <span class="label-text">Consider</span>
+                    </label>
+                    <label class="radio-item">
+                        <input type="radio" name="finalDecision" value="not-recommend">
+                        <span class="radio-custom"></span>
+                        <span class="label-text">Not Recommend</span>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label for="overallRemarks">Overall Remarks</label>
+                    <textarea id="overallRemarks" name="overallRemarks" rows="4"></textarea>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="interviewerSignature">Interviewer's Name & Signature</label>
+                        <input type="text" id="interviewerSignature" name="interviewerSignature">
+                    </div>
+                    <div class="form-group">
+                        <label for="signatureDate">Date</label>
+                        <input type="date" id="signatureDate" name="signatureDate">
+                    </div>
+                </div>
+            </section>
+
+            <!-- Summary Section -->
+            <section class="form-section summary-section">
+                <div class="section-header">
+                    <h2>Assessment Summary</h2>
+                </div>
+                <div class="summary-grid">
+                    <div class="summary-card">
+                        <div class="summary-label">Administrative Skills</div>
+                        <div class="summary-score" id="summaryAdmin">0/50</div>
+                        <div class="summary-percentage" id="percentageAdmin">0%</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-label">Financial Skills</div>
+                        <div class="summary-score" id="summaryFinancial">0/50</div>
+                        <div class="summary-percentage" id="percentageFinancial">0%</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-label">Total Score</div>
+                        <div class="summary-score" id="summaryTotal">0/100</div>
+                        <div class="summary-percentage" id="percentageTotal">0%</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Action Buttons -->
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" onclick="resetForm()">Reset Form</button>
+                <button type="button" class="btn btn-primary" onclick="saveForm()">Save Assessment</button>
+            </div>
+        </form>
+
+        <footer class="footer">
+            <p>&copy; 2026 Church Interview Assessment System. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
